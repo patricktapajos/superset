@@ -79,6 +79,29 @@ class CeleryConfig(object):
 CELERY_CONFIG = CeleryConfig
 SQLLAB_CTAS_NO_LIMIT = True
 
+MAPBOX_API_KEY = get_env_variable("MAPBOX_API_KEY")
+ENABLE_JAVASCRIPT_CONTROLS = True
+PUBLIC_ROLE_LIKE = get_env_variable("PUBLIC_ROLE_LIKE")
+# SESSION_COOKIE_SAMESITE = None # Sufficient for Firefox
+# SESSION_COOKIE_SECURE = True # Required for Google Chrome (at least from version 84)
+SESSION_COOKIE_HTTPONLY = True  # Prevent cookie from being read by frontend JS?
+SESSION_COOKIE_SECURE = False  # Prevent cookie from being transmitted over non-tls?
+SESSION_COOKIE_SAMESITE = "Lax"  # One of [None, 'None', 'Lax', 'Strict']
+
+# Setup default language
+BABEL_DEFAULT_LOCALE = "pt_BR"
+
+LANGUAGES = {
+    "pt_BR": {"flag": "br", "name": "Brazilian Portuguese"},
+    "en": {"flag": "us", "name": "English"},
+    "es": {"flag": "es", "name": "Spanish"},
+}
+
+# Allowed format types for upload on Database view
+EXCEL_EXTENSIONS = {"xlsx", "xls"}
+CSV_EXTENSIONS = {"csv", "tsv", "txt"}
+ALLOWED_EXTENSIONS = {*EXCEL_EXTENSIONS, *CSV_EXTENSIONS}
+
 #
 # Optionally import superset_config_docker.py (which will have been included on
 # the PYTHONPATH) in order to allow for local settings to be overridden
