@@ -21,6 +21,7 @@ import { Link } from 'react-router-dom';
 import { NavItem } from 'react-bootstrap';
 import { Menu } from 'src/common/components';
 import NavDropdown from '../NavDropdown';
+import { t } from '@superset-ui/core';
 
 export interface MenuObjectChildProps {
   label: string;
@@ -48,7 +49,7 @@ export default function MenuObject({
     return (
       <li role="presentation">
         <Link role="button" to={url}>
-          {label}
+        {t(`${label}`)}
         </Link>
       </li>
     );
@@ -56,7 +57,7 @@ export default function MenuObject({
   if (url) {
     return (
       <NavItem eventKey={index} href={url}>
-        {label}
+        {t(`${label}`)}
       </NavItem>
     );
   }
@@ -64,7 +65,7 @@ export default function MenuObject({
   return (
     <NavDropdown
       id={`menu-dropdown-${label}`}
-      title={label}
+      title={t(`${label}`)}
       onMouseEnter={() => setDropdownOpen(true)}
       onMouseLeave={() => setDropdownOpen(false)}
       onToggle={value => setDropdownOpen(value)}

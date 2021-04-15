@@ -178,6 +178,7 @@
         "Escolha exatamente 2 colunas para 'Agrupar por'"
       ],
       "Country Map": ["Mapa do País"],
+      "State Map": ["Mapa de Estados"],
       "World Map": ["Mapa mundial"],
       "Filters": ["Filtros"],
       "Invalid filter configuration, please select a column": [

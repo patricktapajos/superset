@@ -1961,6 +1961,33 @@ class CountryMapViz(BaseViz):
         d = df.to_dict(orient="records")
         return d
 
+class StateMapViz(BaseViz):
+    
+    """A state centric"""
+
+    viz_type = "state_map"
+    verbose_name = _("State Map")
+    is_timeseries = False
+    credits = "From Arbocontrol By Patrick Tapajos"
+
+    def query_obj(self) -> QueryObjectDict:
+        qry = super().query_obj()
+        qry["metrics"] = [self.form_data["metric"]]
+        qry["groupby"] = [self.form_data["entity"]]
+        return qry
+
+    def get_data(self, df: pd.DataFrame) -> VizData:
+        if df.empty:
+            return None
+        fd = self.form_data
+        cols = [fd.get("entity")]
+        metric = self.metric_labels[0]
+        cols += [metric]
+        ndf = df[cols]
+        df = ndf
+        df.columns = ["state_id", "metric"]
+        d = df.to_dict(orient="records")
+        return d
 
 class WorldMapViz(BaseViz):
 

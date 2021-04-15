@@ -40,6 +40,8 @@ import TableChartPlugin from '@superset-ui/plugin-chart-table';
 import TreemapChartPlugin from '@superset-ui/legacy-plugin-chart-treemap';
 import { WordCloudChartPlugin } from '@superset-ui/plugin-chart-word-cloud';
 import WorldMapChartPlugin from '@superset-ui/legacy-plugin-chart-world-map';
+import StateMapChartPlugin from '../BrazilCitiesMap/legacy-plugin-chart-brazil-city-map';
+
 import {
   AreaChartPlugin,
   BarChartPlugin,
@@ -86,6 +88,7 @@ export default class MainPreset extends Preset {
         new ChordChartPlugin().configure({ key: 'chord' }),
         new CompareChartPlugin().configure({ key: 'compare' }),
         new CountryMapChartPlugin().configure({ key: 'country_map' }),
+        new StateMapChartPlugin().configure({ key: 'state_map' }),
         new DistBarChartPlugin().configure({ key: 'dist_bar' }),
         new DualLineChartPlugin().configure({ key: 'dual_line' }),
         new EventFlowChartPlugin().configure({ key: 'event_flow' }),

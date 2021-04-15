@@ -90,6 +90,7 @@ const DEFAULT_ORDER = [
   'paired_ttest',
   'para',
   'country_map',
+  'state_map',
 ];
 
 const typesWithDefaultOrder = new Set(DEFAULT_ORDER);
