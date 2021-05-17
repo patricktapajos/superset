@@ -1981,11 +1981,14 @@ class StateMapViz(BaseViz):
             return None
         fd = self.form_data
         cols = [fd.get("entity")]
+        print(fd.get("adhoc_filters"))
+        state = fd.get("adhoc_filters")[0]['comparator'] if len(fd.get("adhoc_filters")) > 0 else 'brasil'
         metric = self.metric_labels[0]
         cols += [metric]
-        ndf = df[cols]
+        ndf = df[cols]        
         df = ndf
-        df.columns = ["state_id", "metric"]
+        ndf['state'] = state
+        df.columns = ["state_id", "metric", "state"]
         d = df.to_dict(orient="records")
         return d
 

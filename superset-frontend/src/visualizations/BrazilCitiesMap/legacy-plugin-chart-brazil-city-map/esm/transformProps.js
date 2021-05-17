@@ -23,7 +23,7 @@ export default function transformProps(chartProps) {
     width,
     height,
     data: queriesData[0].data,
-    state: selectState,
+    state: queriesData[0].data.estado ? queriesData[0].data.estado : 'brasil',
     linearColorScheme,
     numberFormat,
   };

@@ -3,6 +3,10 @@
 exports.__esModule = true;
 exports.default = void 0;
 
+var _brasil = _interopRequireDefault(
+  require('file-loader!./states/acre.geojson'),
+);
+
 var _acre = _interopRequireDefault(
   require('file-loader!./states/acre.geojson'),
 );

@@ -230,7 +230,8 @@ function StateMap(element, props) {
       .on('click', clicked);
   }
 
-  const stateKey = state.toLowerCase();
+  let state_ = data.length > 0 ? data[0].state : 'brasil';
+  const stateKey = state_;
   const map = maps[stateKey];
 
   if (map) {

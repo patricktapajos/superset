@@ -136,7 +136,7 @@ function StateMap(element, props) {
   const selectAndDisplayNameOfRegion = function selectAndDisplayNameOfRegion(
     feature,
   ) {
-    let name = '';
+    let name = 'Brasil';
 
     if (feature && feature.properties) {
       if (feature.properties.name) {
@@ -210,7 +210,8 @@ function StateMap(element, props) {
       .on('click', clicked);
   }
 
-  const stateKey = state.toLowerCase();
+  let state_ = data.length > 0 ? data[0].state : 'brasil';
+  const stateKey = state_;
   const map = maps[stateKey];
 
   if (map) {
