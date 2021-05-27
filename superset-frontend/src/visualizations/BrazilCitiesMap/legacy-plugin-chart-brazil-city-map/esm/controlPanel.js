@@ -24,7 +24,6 @@ import {
 } from '@superset-ui/chart-controls';
 const config = {
   controlPanelSections: [
-    sections.legacyRegularTime,
     {
       label: t('Query'),
       expanded: true,
@@ -36,45 +35,6 @@ const config = {
       tabOverride: 'customize',
       controlSetRows: [
         [
-          // {
-          //   name: 'select_state',
-          //   config: {
-          //     type: 'SelectControl',
-          //     label: t('State Name'),
-          //     default: 'Amazonas',
-          //     choices: [
-          //       'Acre',
-          //       'Amapa',
-          //       'Amazonas',
-          //       'Bahia',
-          //       'Ceara',
-          //       'DistritoFederal',
-          //       'EspiritoSanto',
-          //       'Goias',
-          //       'Maranhao',
-          //       'MatoGrosso',
-          //       'MatoGrossoSul',
-          //       'MinasGerais',
-          //       'Para',
-          //       'Paraiba',
-          //       'Parana',
-          //       'Pernambuco',
-          //       'Piaui',
-          //       'RioGrandeNorte',
-          //       'RioGrandeSul',
-          //       'RioJaneiro',
-          //       'Rondonia',
-          //       'Roraima',
-          //       'SantaCatarina',
-          //       'SaoPaulo',
-          //       'Sergipe',
-          //       'Tocantins',
-          //     ].map(s => [s, s]),
-          //     description: t(
-          //       'The name of the state that Superset should display',
-          //     ),
-          //   },
-          // },
           {
             name: 'number_format',
             config: {
@@ -94,7 +54,7 @@ const config = {
   ],
   controlOverrides: {
     entity: {
-      label: t('ISO 3166-2 Codes'),
+      label: t('ISO Arbo Codes'),
       description: t(
         'Column containing ISO 3166-2 codes of region/province/department in your table.',
       ),

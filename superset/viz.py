@@ -1979,16 +1979,15 @@ class StateMapViz(BaseViz):
     def get_data(self, df: pd.DataFrame) -> VizData:
         if df.empty:
             return None
-        fd = self.form_data
+        fd = self.form_data        
         cols = [fd.get("entity")]
-        print(fd.get("adhoc_filters"))
-        state = fd.get("adhoc_filters")[0]['comparator'] if len(fd.get("adhoc_filters")) > 0 else 'brasil'
         metric = self.metric_labels[0]
         cols += [metric]
         ndf = df[cols]        
-        df = ndf
-        ndf['state'] = state
-        df.columns = ["state_id", "metric", "state"]
+        ndf['state'] = ndf['iso_abc'].map(lambda s: str(s)[7:])
+        ndf['iso_abc'] = ndf['iso_abc'].map(lambda s: str(s)[0:6])
+        df = ndf        
+        df.columns = ["city_id", "metric", "state"]
         d = df.to_dict(orient="records")
         return d
 

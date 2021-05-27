@@ -27,24 +27,47 @@ import {
 } from '@superset-ui/core';
 import states from './states';
 import './StateMap.css';
+// import { getBuckets, getBreakPointColorScaler } from './utils';
+
 const propTypes = {
   data: PropTypes.arrayOf(
     PropTypes.shape({
-      state_id: PropTypes.number,
+      city_id: PropTypes.string,
+      state: PropTypes.string,
       metric: PropTypes.number,
     }),
   ),
   width: PropTypes.number,
   height: PropTypes.number,
-  state: PropTypes.string,
   linearColorScheme: PropTypes.string,
   mapBaseUrl: PropTypes.string,
   numberFormat: PropTypes.string,
 };
+
 const maps = {};
 
 function StateMap(element, props) {
-  const { data, width, height, state, linearColorScheme, numberFormat } = props;
+  const {
+    data,
+    width,
+    height,
+    linearColorScheme,
+    numberFormat,
+    extraFilters,
+    adhocFilters,
+    state_field,
+  } = props;
+
+  let filters = [];
+
+  if (extraFilters && extraFilters.length > 0) {
+    let f = extraFilters.filter(o => o.col == state_field);
+    filters.push({ state: f[0].val });
+  } else if (adhocFilters && adhocFilters.length > 0) {
+    let f = adhocFilters.filter(o => o.subject == state_field);
+    filters.push({ state: f[0].comparator });
+  }
+
   const container = element;
   const format = getNumberFormatter(numberFormat);
   const colorScale = getSequentialSchemeRegistry()
@@ -52,10 +75,39 @@ function StateMap(element, props) {
     .createLinearScale(d3Extent(data, v => v.metric));
   const colorMap = {};
   data.forEach(d => {
-    colorMap[d.state_id] = colorScale(d.metric);
+    colorMap[d.city_id] = colorScale(d.metric);
+    colorMap[d.state] = colorScale(d.metric);
   });
 
-  const colorFn = d => colorMap[d.properties.id] || 'none';
+  // const metricLabel = fd.metric ? fd.metric.label || fd.metric : null;
+  const colorFn = d => {
+    if (d.properties.ISO != undefined) {
+      return colorMap[d.properties.ISO.substr(-2, 2)];
+    } else {
+      return colorMap[d.properties.id];
+    }
+  };
+
+  // const accessor = d => d[metricLabel]; // base color for the polygons
+
+  // const baseColorScaler =
+  //   fd.metric === null
+  //     ? () => [fc.r, fc.g, fc.b, 255 * fc.a]
+  //     : getBreakPointColorScaler(fd, data, accessor); // when polygons are selected, reduce the opacity of non-selected polygons
+
+  // const colorScaler = d => {
+  //   const baseColor = baseColorScaler(d);
+
+  //   if (selected.length > 0 && !selected.includes(d[fd.line_column])) {
+  //     baseColor[3] /= 2;
+  //   }
+
+  //   return baseColor;
+  // };
+
+  // const accessor = d => d[metricLabel];
+
+  // const buckets = getBuckets(formData, payload.data.features, accessor);
 
   const path = d3.geo.path();
   const div = d3.select(container);
@@ -142,6 +194,9 @@ function StateMap(element, props) {
       if (feature.properties.name) {
         name = feature.properties.name;
       }
+      if (feature.properties.NAME_1) {
+        name = feature.properties.NAME_1;
+      }
     }
 
     bigText.text(name);
@@ -163,7 +218,18 @@ function StateMap(element, props) {
 
     d3.select(this).style('fill', c);
     selectAndDisplayNameOfRegion(d);
-    const result = data.filter(region => region.state_id == d.properties.id);
+    let result = data.filter(region => region.city_id == d.properties.id);
+    if (result.length == 0) {
+      let result_ = data.filter(region => {
+        if (d.properties.ISO != undefined) {
+          return region.state == d.properties.ISO.substr(-2, 2);
+        }
+      });
+      let sum = result_.reduce((totalValue, s_) => {
+        return totalValue + s_.metric;
+      }, 0);
+      result.push({ metric: sum ? sum : 0 });
+    }
     updateMetrics(result);
   };
 
@@ -210,7 +276,12 @@ function StateMap(element, props) {
       .on('click', clicked);
   }
 
-  let state_ = data.length > 0 ? data[0].state : 'brasil';
+  let state_ = 'brasil';
+
+  if (filters.length > 0) {
+    state_ = filters[0].state;
+  }
+
   const stateKey = state_;
   const map = maps[stateKey];
 
@@ -225,6 +296,12 @@ function StateMap(element, props) {
       }
     });
   }
+
+  // React.createElement(Legend, {
+  //     categories: buckets,
+  //     position: formData.legend_position,
+  //     format: formData.legend_format
+  //   })
 }
 
 StateMap.displayName = 'StateMap';

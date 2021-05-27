@@ -18,12 +18,19 @@
  */
 export default function transformProps(chartProps) {
   const { width, height, formData, queriesData } = chartProps;
-  const { linearColorScheme, numberFormat, selectState } = formData;
+  const {
+    linearColorScheme,
+    numberFormat,
+    adhocFilters,
+    extraFilters,
+  } = formData;
   return {
     width,
     height,
     data: queriesData[0].data,
-    state: queriesData[0].data.estado ? queriesData[0].data.estado : 'brasil',
+    state_field: 'estado',
+    extraFilters: extraFilters,
+    adhocFilters: adhocFilters,
     linearColorScheme,
     numberFormat,
   };
