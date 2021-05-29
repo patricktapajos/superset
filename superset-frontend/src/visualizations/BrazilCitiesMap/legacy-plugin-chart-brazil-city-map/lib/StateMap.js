@@ -42,13 +42,13 @@ function _interopRequireDefault(obj) {
 const propTypes = {
   data: _propTypes.default.arrayOf(
     _propTypes.default.shape({
-      state_id: _propTypes.default.number,
+      city_id: _propTypes.default.string,
+      state: _propTypes.default.string,
       metric: _propTypes.default.number,
     }),
   ),
   width: _propTypes.default.number,
   height: _propTypes.default.number,
-  state: _propTypes.default.string,
   linearColorScheme: _propTypes.default.string,
   mapBaseUrl: _propTypes.default.string,
   numberFormat: _propTypes.default.string,
@@ -56,7 +56,27 @@ const propTypes = {
 const maps = {};
 
 function StateMap(element, props) {
-  const { data, width, height, state, linearColorScheme, numberFormat } = props;
+  const {
+    data,
+    width,
+    height,
+    linearColorScheme,
+    numberFormat,
+    extraFilters,
+    adhocFilters,
+    state_field,
+  } = props;
+
+  let filters = [];
+
+  if (extraFilters && extraFilters.length > 0) {
+    let f = extraFilters.filter(o => o.col == state_field);
+    filters.push({ state: f[0].val });
+  } else if (adhocFilters && adhocFilters.length > 0) {
+    let f = adhocFilters.filter(o => o.subject == state_field);
+    filters.push({ state: f[0].comparator });
+  }
+
   const container = element;
   const format = (0, _core.getNumberFormatter)(numberFormat);
   const colorScale = (0, _core.getSequentialSchemeRegistry)()
@@ -64,10 +84,17 @@ function StateMap(element, props) {
     .createLinearScale((0, _d3Array.extent)(data, v => v.metric));
   const colorMap = {};
   data.forEach(d => {
-    colorMap[d.state_id] = colorScale(d.metric);
+    colorMap[d.city_id] = colorScale(d.metric);
+    colorMap[d.state] = colorScale(d.metric);
   });
 
-  const colorFn = d => colorMap[d.properties.id] || 'none';
+  const colorFn = d => {
+    if (d.properties.ISO != undefined) {
+      return colorMap[d.properties.ISO.substr(-2, 2)];
+    } else {
+      return colorMap[d.properties.id];
+    }
+  };
 
   const path = _d.default.geo.path();
 
@@ -150,11 +177,14 @@ function StateMap(element, props) {
   const selectAndDisplayNameOfRegion = function selectAndDisplayNameOfRegion(
     feature,
   ) {
-    let name = '';
+    let name = 'Brasil';
 
     if (feature && feature.properties) {
       if (feature.properties.name) {
         name = feature.properties.name;
+      }
+      if (feature.properties.NAME_1) {
+        name = feature.properties.NAME_1;
       }
     }
 
@@ -178,7 +208,18 @@ function StateMap(element, props) {
     _d.default.select(this).style('fill', c);
 
     selectAndDisplayNameOfRegion(d);
-    const result = data.filter(region => region.state_id === d.properties.id);
+    let result = data.filter(region => region.city_id == d.properties.id);
+    if (result.length == 0) {
+      let result_ = data.filter(region => {
+        if (d.properties.ISO != undefined) {
+          return region.state == d.properties.ISO.substr(-2, 2);
+        }
+      });
+      let sum = result_.reduce((totalValue, s_) => {
+        return totalValue + s_.metric;
+      }, 0);
+      result.push({ metric: sum ? sum : 0 });
+    }
     updateMetrics(result);
   };
 
@@ -230,7 +271,12 @@ function StateMap(element, props) {
       .on('click', clicked);
   }
 
-  let state_ = data.length > 0 ? data[0].state : 'brasil';
+  let state_ = 'brasil';
+
+  if (filters.length > 0) {
+    state_ = filters[0].state;
+  }
+
   const stateKey = state_;
   const map = maps[stateKey];
 

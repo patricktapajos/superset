@@ -40,45 +40,6 @@ const config = {
       controlSetRows: [
         [
           {
-            name: 'select_state',
-            config: {
-              type: 'SelectControl',
-              label: (0, _core.t)('State Name'),
-              default: 'Amazonas',
-              choices: [
-                'Acre',
-                'Amapa',
-                'Amazonas',
-                'Bahia',
-                'Ceara',
-                'DistritoFederal',
-                'EspiritoSanto',
-                'Goias',
-                'Maranhao',
-                'MatoGrosso',
-                'MatoGrossoSul',
-                'MinasGerais',
-                'Para',
-                'Paraiba',
-                'Parana',
-                'Pernambuco',
-                'Piaui',
-                'RioGrandeNorte',
-                'RioGrandeSul',
-                'RioJaneiro',
-                'Rondonia',
-                'Roraima',
-                'SantaCatarina',
-                'SaoPaulo',
-                'Sergipe',
-                'Tocantins',
-              ].map(s => [s, s]),
-              description: (0, _core.t)(
-                'The name of the state that Superset should display',
-              ),
-            },
-          },
-          {
             name: 'number_format',
             config: {
               type: 'SelectControl',
@@ -97,7 +58,7 @@ const config = {
   ],
   controlOverrides: {
     entity: {
-      label: (0, _core.t)('ISO 3166-2 Codes'),
+      label: (0, _core.t)('ISO Arbo Codes'),
       description: (0, _core.t)(
         'Column containing ISO 3166-2 codes of region/province/department in your table.',
       ),
