@@ -18,7 +18,6 @@
  */
 export default function transformProps(chartProps) {
   const { width, height, formData, queriesData } = chartProps;
-  console.log(chartProps);
   const {
     linearColorScheme,
     numberFormat,

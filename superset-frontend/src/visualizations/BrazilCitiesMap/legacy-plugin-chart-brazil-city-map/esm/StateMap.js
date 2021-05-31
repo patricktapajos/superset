@@ -63,10 +63,14 @@ function StateMap(element, props) {
 
   if (extraFilters && extraFilters.length > 0) {
     let f = extraFilters.filter(o => o.col == state_field);
-    filters.push({ state: f[0].val });
+    if (f.length > 0) {
+      filters.push({ state: f[0].val });
+    }
   } else if (adhocFilters && adhocFilters.length > 0) {
     let f = adhocFilters.filter(o => o.subject == state_field);
-    filters.push({ state: f[0].comparator });
+    if (f.length > 0) {
+      filters.push({ state: f[0].comparator });
+    }
   }
 
   const container = element;
