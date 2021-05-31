@@ -18,11 +18,13 @@
  */
 export default function transformProps(chartProps) {
   const { width, height, formData, queriesData } = chartProps;
+  console.log(chartProps);
   const {
     linearColorScheme,
     numberFormat,
     adhocFilters,
     extraFilters,
+    metric,
   } = formData;
   return {
     width,
@@ -31,6 +33,7 @@ export default function transformProps(chartProps) {
     state_field: 'estado',
     extraFilters: extraFilters,
     adhocFilters: adhocFilters,
+    metric: metric,
     linearColorScheme,
     numberFormat,
   };

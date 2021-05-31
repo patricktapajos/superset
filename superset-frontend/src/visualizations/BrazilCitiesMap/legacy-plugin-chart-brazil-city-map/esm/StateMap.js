@@ -56,6 +56,7 @@ function StateMap(element, props) {
     extraFilters,
     adhocFilters,
     state_field,
+    metric,
   } = props;
 
   let filters = [];
@@ -225,13 +226,51 @@ function StateMap(element, props) {
           return region.state == d.properties.ISO.substr(-2, 2);
         }
       });
-      let sum = result_.reduce((totalValue, s_) => {
-        return totalValue + s_.metric;
-      }, 0);
-      result.push({ metric: sum ? sum : 0 });
+
+      let agg = verifyMetric(metric.aggregate, result_);
+
+      result.push({ metric: agg ? agg : 0 });
     }
     updateMetrics(result);
   };
+
+  function verifyMetric(agg, arr) {
+    if (agg == 'AVG') {
+      let qtde = 0;
+      let sum = arr.reduce((totalValue, s_) => {
+        qtde = qtde + 1;
+        return totalValue + s_.metric;
+      }, 0);
+      if (qtde > 0) qtde = (sum / qtde).toFixed(2);
+      return qtde;
+    }
+
+    if (agg == 'COUNT') {
+      return arr.length;
+    }
+    if (agg == 'COUNT_DISTINCT') {
+      return arr.reduce(
+        (acc, o) => ((acc[o.metric] = (acc[o.metric] || 0) + 1), acc),
+        {},
+      );
+    }
+    if (agg == 'MAX') {
+      arr.reduce(function (a, b) {
+        return Math.max(a.metric, b.metric);
+      });
+    }
+    if (agg == 'MIN') {
+      arr.reduce(function (a, b) {
+        return Math.min(a.metric, b.metric);
+      });
+    }
+
+    if (agg == 'SUM') {
+      let sum = arr.reduce((totalValue, s_) => {
+        return totalValue + s_.metric;
+      }, 0);
+    }
+  }
 
   const mouseout = function mouseout() {
     d3.select(this).style('fill', colorFn);
