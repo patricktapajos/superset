@@ -25,11 +25,11 @@ import React, {
 import { styled, SupersetClient, t } from '@superset-ui/core';
 import { AsyncSelect, CreatableSelect, Select } from 'src/components/Select';
 
-import FormLabel from 'src/components/FormLabel';
+import { FormLabel } from 'src/components/Form';
 
 import DatabaseSelector from 'src/components/DatabaseSelector';
 import RefreshLabel from 'src/components/RefreshLabel';
-import CertifiedIconWithTooltip from 'src/components/CertifiedIconWithTooltip';
+import CertifiedIcon from 'src/components/CertifiedIcon';
 import WarningIconWithTooltip from 'src/components/WarningIconWithTooltip';
 
 const FieldTitle = styled.p`
@@ -261,7 +261,7 @@ const TableSelector: FunctionComponent<TableSelectorProps> = ({
           <i className={`fa fa-${option.type === 'view' ? 'eye' : 'table'}`} />
         </small>
         {option.extra?.certification && (
-          <CertifiedIconWithTooltip
+          <CertifiedIcon
             certifiedBy={option.extra.certification.certified_by}
             details={option.extra.certification.details}
             size={20}

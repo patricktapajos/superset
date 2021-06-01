@@ -25,7 +25,7 @@ from superset.commands.exceptions import (
     ImportFailedError,
     UpdateFailedError,
 )
-from superset.exceptions import SupersetErrorException
+from superset.exceptions import SupersetErrorException, SupersetErrorsException
 
 
 class DatabaseInvalidError(CommandInvalidError):
@@ -117,19 +117,21 @@ class DatabaseDeleteFailedReportsExistError(DatabaseDeleteFailedError):
     message = _("There are associated alerts or reports")
 
 
-class DatabaseTestConnectionFailedError(CommandException):
+class DatabaseTestConnectionFailedError(SupersetErrorsException):
+    status = 422
     message = _("Connection failed, please check your connection settings")
 
 
-class DatabaseSecurityUnsafeError(DatabaseTestConnectionFailedError):
+class DatabaseSecurityUnsafeError(CommandInvalidError):
     message = _("Stopped an unsafe database connection")
 
 
-class DatabaseTestConnectionDriverError(DatabaseTestConnectionFailedError):
+class DatabaseTestConnectionDriverError(CommandInvalidError):
     message = _("Could not load database driver")
 
 
-class DatabaseTestConnectionUnexpectedError(DatabaseTestConnectionFailedError):
+class DatabaseTestConnectionUnexpectedError(SupersetErrorsException):
+    status = 422
     message = _("Unexpected error occurred, please check your logs for details")
 
 
@@ -137,5 +139,13 @@ class DatabaseImportError(ImportFailedError):
     message = _("Import database failed for an unknown reason")
 
 
-class DatabaseTestConnectionNetworkError(SupersetErrorException):
-    status = 400
+class InvalidEngineError(SupersetErrorException):
+    status = 422
+
+
+class DatabaseOfflineError(SupersetErrorException):
+    status = 422
+
+
+class InvalidParametersError(SupersetErrorsException):
+    status = 422

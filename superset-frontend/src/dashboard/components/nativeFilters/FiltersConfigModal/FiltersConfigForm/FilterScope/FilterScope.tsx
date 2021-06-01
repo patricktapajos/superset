@@ -19,7 +19,7 @@
 
 import React, { FC } from 'react';
 import { t, styled } from '@superset-ui/core';
-import { Radio } from 'src/common/components/Radio';
+import { Radio } from 'src/components/Radio';
 import { Form, Typography } from 'src/common/components';
 import { Scope } from '../../../types';
 import { Scoping } from './types';
@@ -64,7 +64,6 @@ const FilterScope: FC<FilterScopeProps> = ({
 
   return (
     <Wrapper>
-      <Typography.Title level={5}>{t('Scoping')}</Typography.Title>
       <CleanFormItem
         name={[...pathToFormValue, 'scoping']}
         initialValue={initialScoping}

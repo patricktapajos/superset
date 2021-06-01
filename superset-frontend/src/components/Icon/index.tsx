@@ -410,18 +410,27 @@ export const iconsRegistry: Record<
 
 export interface IconProps extends SVGProps<SVGSVGElement> {
   name: IconName;
+  'data-test'?: string;
 }
 
 const Icon = ({
   name,
   color = '#666666',
   viewBox = '0 0 24 24',
+  'data-test': dataTest,
   ...rest
 }: IconProps) => {
   const Component = iconsRegistry[name];
 
   return (
-    <Component color={color} viewBox={viewBox} data-test={name} {...rest} />
+    <Component
+      role="img"
+      aria-label={name}
+      color={color}
+      viewBox={viewBox}
+      data-test={dataTest ?? name}
+      {...rest}
+    />
   );
 };
 

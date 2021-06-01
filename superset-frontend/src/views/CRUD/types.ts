@@ -23,12 +23,20 @@ export type FavoriteStatus = {
   [id: number]: boolean;
 };
 
+export type Filters = {
+  col: string;
+  opr: string;
+  value: string;
+};
+
 export interface DashboardTableProps {
   addDangerToast: (message: string) => void;
   addSuccessToast: (message: string) => void;
   search: string;
   user?: User;
   mine: Array<Dashboard>;
+  showThumbnails?: boolean;
+  featureFlag?: boolean;
 }
 
 export interface Dashboard {
@@ -115,7 +123,12 @@ export enum QueryObjectColumns {
   tracking_url = 'tracking_url',
 }
 
-export type ImportResourceName = 'chart' | 'dashboard' | 'database' | 'dataset';
+export type ImportResourceName =
+  | 'chart'
+  | 'dashboard'
+  | 'database'
+  | 'dataset'
+  | 'saved_query';
 
 export type DatabaseObject = {
   allow_run_async?: boolean;

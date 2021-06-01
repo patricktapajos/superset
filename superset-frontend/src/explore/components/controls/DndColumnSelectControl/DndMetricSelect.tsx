@@ -18,18 +18,18 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ensureIsArray, Metric, t } from '@superset-ui/core';
+import { ensureIsArray, Metric, tn } from '@superset-ui/core';
 import { ColumnMeta } from '@superset-ui/chart-controls';
 import { isEqual } from 'lodash';
 import { usePrevious } from 'src/common/hooks/usePrevious';
-import AdhocMetric from '../MetricControl/AdhocMetric';
-import AdhocMetricPopoverTrigger from '../MetricControl/AdhocMetricPopoverTrigger';
-import MetricDefinitionValue from '../MetricControl/MetricDefinitionValue';
-import { OptionValueType } from './types';
-import { DatasourcePanelDndItem } from '../../DatasourcePanel/types';
-import { DndItemType } from '../../DndItemType';
-import DndSelectLabel from './DndSelectLabel';
-import { savedMetricType } from '../MetricControl/types';
+import AdhocMetric from 'src/explore/components/controls/MetricControl/AdhocMetric';
+import AdhocMetricPopoverTrigger from 'src/explore/components/controls/MetricControl/AdhocMetricPopoverTrigger';
+import MetricDefinitionValue from 'src/explore/components/controls/MetricControl/MetricDefinitionValue';
+import { OptionValueType } from 'src/explore/components/controls/DndColumnSelectControl/types';
+import { DatasourcePanelDndItem } from 'src/explore/components/DatasourcePanel/types';
+import { DndItemType } from 'src/explore/components/DndItemType';
+import DndSelectLabel from 'src/explore/components/controls/DndColumnSelectControl/DndSelectLabel';
+import { savedMetricType } from 'src/explore/components/controls/MetricControl/types';
 
 const isDictionaryForAdhocMetric = (value: any) =>
   value && !(value instanceof AdhocMetric) && value.expressionType;
@@ -268,7 +268,11 @@ export const DndMetricSelect = (props: any) => {
         canDrop={canDrop}
         valuesRenderer={valuesRenderer}
         accept={[DndItemType.Column, DndItemType.Metric]}
-        ghostButtonText={t('Drop columns or metrics')}
+        ghostButtonText={tn(
+          'Drop column or metric',
+          'Drop columns or metrics',
+          multi ? 2 : 1,
+        )}
         displayGhostButton={multi || value.length === 0}
         {...props}
       />

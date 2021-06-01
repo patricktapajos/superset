@@ -1133,8 +1133,9 @@ The following configuration settings are available for async queries (see config
 - ``GLOBAL_ASYNC_QUERIES_REDIS_STREAM_LIMIT_FIREHOSE`` - the maximum number of events for all users (FIFO eviction)
 - ``GLOBAL_ASYNC_QUERIES_JWT_COOKIE_NAME`` - the async query feature uses a `JWT <https://tools.ietf.org/html/rfc7519>`_ cookie for authentication, this setting is the cookie's name
 - ``GLOBAL_ASYNC_QUERIES_JWT_COOKIE_SECURE`` - JWT cookie secure option
+- ``GLOBAL_ASYNC_QUERIES_JWT_COOKIE_DOMAIN`` - JWT cookie domain option (`see docs for set_cookie <https://tedboy.github.io/flask/interface_api.response_object.html#flask.Response.set_cookie>`
 - ``GLOBAL_ASYNC_QUERIES_JWT_SECRET`` - JWT's use a secret key to sign and validate the contents. This value should be at least 32 bytes and have sufficient randomness for proper security
-- ``GLOBAL_ASYNC_QUERIES_TRANSPORT`` - currently the only available option is (HTTP) `polling`, but support for a WebSocket will be added in future versions
+- ``GLOBAL_ASYNC_QUERIES_TRANSPORT`` - available options: "polling" (HTTP, default), "ws" (WebSocket, requires running superset-websocket server)
 - ``GLOBAL_ASYNC_QUERIES_POLLING_DELAY`` - the time (in ms) between polling requests
 
 More information on the async query feature can be found in `SIP-39 <https://github.com/apache/superset/issues/9190>`_.
@@ -1207,7 +1208,7 @@ To render dashboards you need to install a local browser on your superset instan
   * `geckodriver <https://github.com/mozilla/geckodriver>`_ and Firefox is preferred
   * `chromedriver <http://chromedriver.chromium.org/>`_ is a good option too
 
-You need to adjust the ``EMAIL_REPORTS_WEBDRIVER`` accordingly in your configuration.
+You need to adjust the ``WEBDRIVER_TYPE`` accordingly in your configuration.
 
 You also need to specify on behalf of which username to render the dashboards. In general
 dashboards and charts are not accessible to unauthorized requests, that is why the
@@ -1254,6 +1255,37 @@ in this dictionary are made available for users to use in their SQL.
     JINJA_CONTEXT_ADDONS = {
         'my_crazy_macro': lambda x: x*2,
     }
+
+Default values for jinja templates can be specified via ``Parameters`` menu in the SQL Lab user interface.
+In the UI you can assign a set of parameters as JSON
+
+.. code-block:: JSON
+    {
+        "my_table": "foo"
+    }
+
+The parameters become available in your SQL (example:SELECT * FROM {{ my_table }} ) by using Jinja templating syntax.
+SQL Lab template parameters are stored with the dataset as TEMPLATE PARAMETERS.
+
+There is a special ``_filters`` parameter which can be used to test filters used in the jinja template.
+
+.. code-block:: JSON
+    {
+        "_filters": {
+            "col": "action_type",
+            "op": "IN",
+            "val": ["sell", "buy"]
+    }
+
+.. code-block:: python
+    SELECT action, count(*) as times
+            FROM logs
+            WHERE
+                action in ({{ "'" + "','".join(filter_values('action_type')) + "'" }})
+            GROUP BY action
+
+Note ``_filters`` is not stored with the dataset. It's only used within the SQL Lab UI.
+
 
 Besides default Jinja templating, SQL lab also supports self-defined template
 processor by setting the ``CUSTOM_TEMPLATE_PROCESSORS`` in your superset configuration.
@@ -1487,13 +1519,14 @@ Install Superset with helm in Kubernetes
 ----------------------------------------
 
 You can install Superset into Kubernetes with Helm <https://helm.sh/>. The chart is
-located in ``install/helm``.
+located in the ``helm`` directory.
 
-To install Superset into your Kubernetes:
+To install Superset in your Kubernetes cluster with Helm 3, run:
 
 .. code-block:: bash
 
-    helm upgrade --install superset ./install/helm/superset
+    helm dep install ./helm/superset
+    helm upgrade --install superset ./helm/superset
 
 Note that the above command will install Superset into ``default`` namespace of your Kubernetes cluster.
 
@@ -1569,7 +1602,7 @@ You can enable or disable features with flag from ``superset_config.py``:
 
 .. code-block:: python
 
-     DEFAULT_FEATURE_FLAGS = {
+     FEATURE_FLAGS = {
          'CLIENT_CACHE': False,
          'ENABLE_EXPLORE_JSON_CSRF_PROTECTION': False,
          'PRESTO_EXPAND_DATA': False,

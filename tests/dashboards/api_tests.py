@@ -190,11 +190,14 @@ class TestDashboardApi(SupersetTestCase, ApiOwnersTestCaseMixin, InsertChartMixi
         self.assertEqual(response.status_code, 404)
 
     @pytest.mark.usefixtures("load_world_bank_dashboard_with_slices")
-    def test_get_dashboard_datasets_not_allowed(self):
+    def test_get_draft_dashboard_datasets(self):
+        """
+        All users should have access to dashboards without roles
+        """
         self.login(username="gamma")
         uri = "api/v1/dashboard/world_health/datasets"
         response = self.get_assert_metric(uri, "get_datasets")
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 200)
 
     @pytest.mark.usefixtures("create_dashboards")
     def get_dashboard_by_slug(self):
@@ -215,12 +218,15 @@ class TestDashboardApi(SupersetTestCase, ApiOwnersTestCaseMixin, InsertChartMixi
         self.assertEqual(response.status_code, 404)
 
     @pytest.mark.usefixtures("create_dashboards")
-    def get_dashboard_by_slug_not_allowed(self):
+    def get_draft_dashboard_by_slug(self):
+        """
+        All users should have access to dashboards without roles
+        """
         self.login(username="gamma")
         dashboard = self.dashboards[0]
         uri = f"api/v1/dashboard/{dashboard.slug}"
         response = self.get_assert_metric(uri, "get")
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 200)
 
     @pytest.mark.usefixtures("create_dashboards")
     def test_get_dashboard_charts(self):
@@ -230,6 +236,22 @@ class TestDashboardApi(SupersetTestCase, ApiOwnersTestCaseMixin, InsertChartMixi
         self.login(username="admin")
         dashboard = self.dashboards[0]
         uri = f"api/v1/dashboard/{dashboard.id}/charts"
+        response = self.get_assert_metric(uri, "get_charts")
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.data.decode("utf-8"))
+        self.assertEqual(len(data["result"]), 1)
+        self.assertEqual(
+            data["result"][0]["slice_name"], dashboard.slices[0].slice_name
+        )
+
+    @pytest.mark.usefixtures("create_dashboards")
+    def test_get_dashboard_charts_by_slug(self):
+        """
+        Dashboard API: Test getting charts belonging to a dashboard
+        """
+        self.login(username="admin")
+        dashboard = self.dashboards[0]
+        uri = f"api/v1/dashboard/{dashboard.slug}/charts"
         response = self.get_assert_metric(uri, "get_charts")
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data.decode("utf-8"))
@@ -250,15 +272,15 @@ class TestDashboardApi(SupersetTestCase, ApiOwnersTestCaseMixin, InsertChartMixi
         self.assertEqual(response.status_code, 404)
 
     @pytest.mark.usefixtures("create_dashboards")
-    def test_get_dashboard_charts_not_allowed(self):
+    def test_get_draft_dashboard_charts(self):
         """
-        Dashboard API: Test getting charts on a dashboard a user does not have access to
+        All users should have access to draft dashboards without roles
         """
         self.login(username="gamma")
         dashboard = self.dashboards[0]
         uri = f"api/v1/dashboard/{dashboard.id}/charts"
         response = self.get_assert_metric(uri, "get_charts")
-        self.assertEqual(response.status_code, 404)
+        assert response.status_code == 200
 
     @pytest.mark.usefixtures("create_dashboards")
     def test_get_dashboard_charts_empty(self):
@@ -366,7 +388,7 @@ class TestDashboardApi(SupersetTestCase, ApiOwnersTestCaseMixin, InsertChartMixi
         self.login(username="gamma")
         uri = f"api/v1/dashboard/{dashboard.id}"
         rv = self.client.get(uri)
-        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv.status_code, 200)
         # rollback changes
         db.session.delete(dashboard)
         db.session.commit()
@@ -601,6 +623,14 @@ class TestDashboardApi(SupersetTestCase, ApiOwnersTestCaseMixin, InsertChartMixi
                 "dashboard_export/dashboards/imported_dashboard.yaml", "w"
             ) as fp:
                 fp.write(yaml.safe_dump(dashboard_config).encode())
+        buf.seek(0)
+        return buf
+
+    def create_invalid_dashboard_import(self):
+        buf = BytesIO()
+        with ZipFile(buf, "w") as bundle:
+            with bundle.open("sql/dump.sql", "w") as fp:
+                fp.write("CREATE TABLE foo (bar INT)".encode())
         buf.seek(0)
         return buf
 
@@ -1370,6 +1400,42 @@ class TestDashboardApi(SupersetTestCase, ApiOwnersTestCaseMixin, InsertChartMixi
         db.session.delete(database)
         db.session.commit()
 
+    def test_import_dashboard_invalid_file(self):
+        """
+        Dashboard API: Test import invalid dashboard file
+        """
+        self.login(username="admin")
+        uri = "api/v1/dashboard/import/"
+
+        buf = self.create_invalid_dashboard_import()
+        form_data = {
+            "formData": (buf, "dashboard_export.zip"),
+        }
+        rv = self.client.post(uri, data=form_data, content_type="multipart/form-data")
+        response = json.loads(rv.data.decode("utf-8"))
+
+        assert rv.status_code == 400
+        assert response == {
+            "errors": [
+                {
+                    "message": "No valid import files were found",
+                    "error_type": "GENERIC_COMMAND_ERROR",
+                    "level": "warning",
+                    "extra": {
+                        "issue_codes": [
+                            {
+                                "code": 1010,
+                                "message": (
+                                    "Issue 1010 - Superset encountered an "
+                                    "error while running a command."
+                                ),
+                            }
+                        ]
+                    },
+                }
+            ]
+        }
+
     def test_import_dashboard_v0_export(self):
         num_dashboards = db.session.query(Dashboard).count()
 
@@ -1427,9 +1493,25 @@ class TestDashboardApi(SupersetTestCase, ApiOwnersTestCaseMixin, InsertChartMixi
 
         assert rv.status_code == 422
         assert response == {
-            "message": {
-                "dashboards/imported_dashboard.yaml": "Dashboard already exists and `overwrite=true` was not passed"
-            }
+            "errors": [
+                {
+                    "message": "Error importing dashboard",
+                    "error_type": "GENERIC_COMMAND_ERROR",
+                    "level": "warning",
+                    "extra": {
+                        "dashboards/imported_dashboard.yaml": "Dashboard already exists and `overwrite=true` was not passed",
+                        "issue_codes": [
+                            {
+                                "code": 1010,
+                                "message": (
+                                    "Issue 1010 - Superset encountered an "
+                                    "error while running a command."
+                                ),
+                            }
+                        ],
+                    },
+                }
+            ]
         }
 
         # import with overwrite flag
@@ -1493,7 +1575,25 @@ class TestDashboardApi(SupersetTestCase, ApiOwnersTestCaseMixin, InsertChartMixi
 
         assert rv.status_code == 422
         assert response == {
-            "message": {"metadata.yaml": {"type": ["Must be equal to Dashboard."]}}
+            "errors": [
+                {
+                    "message": "Error importing dashboard",
+                    "error_type": "GENERIC_COMMAND_ERROR",
+                    "level": "warning",
+                    "extra": {
+                        "metadata.yaml": {"type": ["Must be equal to Dashboard."]},
+                        "issue_codes": [
+                            {
+                                "code": 1010,
+                                "message": (
+                                    "Issue 1010 - Superset encountered "
+                                    "an error while running a command."
+                                ),
+                            }
+                        ],
+                    },
+                }
+            ]
         }
 
     def test_get_all_related_roles(self):

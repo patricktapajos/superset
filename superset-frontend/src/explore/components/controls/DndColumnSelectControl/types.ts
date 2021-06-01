@@ -26,7 +26,6 @@ export interface OptionProps {
   children: ReactNode;
   index: number;
   clickClose: (index: number) => void;
-  onShiftOptions: (dragIndex: number, hoverIndex: number) => void;
   withCaret?: boolean;
 }
 
@@ -40,6 +39,7 @@ export interface LabelProps<T = string[] | string> {
   value?: T;
   onChange: (value?: T) => void;
   options: { string: ColumnMeta };
+  multi?: boolean;
 }
 
 export interface DndColumnSelectProps<

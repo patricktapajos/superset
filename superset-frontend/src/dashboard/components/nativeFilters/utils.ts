@@ -20,51 +20,66 @@ import {
   ExtraFormData,
   QueryFormData,
   getChartMetadataRegistry,
-  QueryObject,
   Behavior,
+  EXTRA_FORM_DATA_APPEND_KEYS,
+  EXTRA_FORM_DATA_OVERRIDE_KEYS,
+  AdhocFilter,
+  FeatureFlag,
 } from '@superset-ui/core';
 import { Charts } from 'src/dashboard/types';
 import { RefObject } from 'react';
 import { DataMaskStateWithId } from 'src/dataMask/types';
+import extractUrlParams from 'src/dashboard/util/extractUrlParams';
+import { isFeatureEnabled } from 'src/featureFlags';
 import { Filter } from './types';
 
 export const getFormData = ({
   datasetId,
   cascadingFilters = {},
   groupby,
-  currentValue,
   inputRef,
-  defaultValue,
+  defaultDataMask,
   controlValues,
   filterType,
+  sortMetric,
+  adhoc_filters,
+  time_range,
 }: Partial<Filter> & {
   datasetId?: number;
   inputRef?: RefObject<HTMLInputElement>;
   cascadingFilters?: object;
   groupby?: string;
+  adhoc_filters?: AdhocFilter[];
+  time_range?: string;
 }): Partial<QueryFormData> => {
-  const otherProps: { datasource?: string; groupby?: string[] } = {};
+  const otherProps: {
+    datasource?: string;
+    groupby?: string[];
+    sortMetric?: string;
+  } = {};
   if (datasetId) {
     otherProps.datasource = `${datasetId}__table`;
   }
   if (groupby) {
     otherProps.groupby = [groupby];
   }
+  if (sortMetric) {
+    otherProps.sortMetric = sortMetric;
+  }
   return {
     ...controlValues,
     ...otherProps,
-    adhoc_filters: [],
+    adhoc_filters: adhoc_filters ?? [],
     extra_filters: [],
     extra_form_data: cascadingFilters,
     granularity_sqla: 'ds',
     metrics: ['count'],
-    row_limit: 10000,
+    row_limit: 1000,
     showSearch: true,
-    currentValue,
-    defaultValue,
-    time_range: 'No filter',
+    defaultValue: defaultDataMask?.filterState?.value,
+    time_range,
     time_range_endpoints: ['inclusive', 'exclusive'],
-    url_params: {},
+    url_params: extractUrlParams('regular'),
     viz_type: filterType,
     inputRef,
   };
@@ -72,46 +87,35 @@ export const getFormData = ({
 
 export function mergeExtraFormData(
   originalExtra: ExtraFormData = {},
-  newExtra: ExtraFormData,
+  newExtra: ExtraFormData = {},
 ): ExtraFormData {
-  const {
-    override_form_data: originalOverride = {},
-    append_form_data: originalAppend = {},
-  } = originalExtra;
-  const {
-    override_form_data: newOverride = {},
-    append_form_data: newAppend = {},
-    custom_form_data: newCustom = {},
-  } = newExtra;
-
-  const appendKeys = new Set([
-    ...Object.keys(originalAppend),
-    ...Object.keys(newAppend),
-  ]);
-  const appendFormData: Partial<QueryObject> = {};
-  appendKeys.forEach(key => {
-    appendFormData[key] = [
-      // @ts-ignore
-      ...(originalAppend?.[key] || []),
-      // @ts-ignore
-      ...(newAppend?.[key] || []),
+  const mergedExtra: ExtraFormData = {};
+  EXTRA_FORM_DATA_APPEND_KEYS.forEach((key: string) => {
+    const mergedValues = [
+      ...(originalExtra[key] || []),
+      ...(newExtra[key] || []),
     ];
+    if (mergedValues.length) {
+      mergedExtra[key] = mergedValues;
+    }
   });
-
-  return {
-    custom_form_data: newCustom,
-    override_form_data: {
-      ...originalOverride,
-      ...newOverride,
-    },
-    append_form_data: appendFormData,
-  };
+  EXTRA_FORM_DATA_OVERRIDE_KEYS.forEach((key: string) => {
+    const originalValue = originalExtra[key];
+    if (originalValue !== undefined) {
+      mergedExtra[key] = originalValue;
+    }
+    const newValue = newExtra[key];
+    if (newValue !== undefined) {
+      mergedExtra[key] = newValue;
+    }
+  });
+  return mergedExtra;
 }
 
 export function isCrossFilter(vizType: string) {
   // @ts-ignore need export from superset-ui `ItemWithValue`
   return getChartMetadataRegistry().items[vizType]?.value.behaviors?.includes(
-    Behavior.CROSS_FILTER,
+    Behavior.INTERACTIVE_CHART,
   );
 }
 
@@ -122,10 +126,19 @@ export function getExtraFormData(
 ): ExtraFormData {
   let extraFormData: ExtraFormData = {};
   filterIdsAppliedOnChart.forEach(key => {
-    const singleDataMask =
-      dataMask.nativeFilters[key] ?? dataMask.crossFilters[key] ?? {};
-    const { extraFormData: newExtra = {} } = singleDataMask;
-    extraFormData = mergeExtraFormData(extraFormData, newExtra);
+    extraFormData = mergeExtraFormData(
+      extraFormData,
+      dataMask[key]?.extraFormData ?? {},
+    );
   });
   return extraFormData;
+}
+
+export function nativeFilterGate(behaviors: Behavior[]): boolean {
+  return (
+    !behaviors.includes(Behavior.NATIVE_FILTER) ||
+    (isFeatureEnabled(FeatureFlag.DASHBOARD_FILTERS_EXPERIMENTAL) &&
+      isFeatureEnabled(FeatureFlag.DASHBOARD_CROSS_FILTERS) &&
+      behaviors.includes(Behavior.INTERACTIVE_CHART))
+  );
 }

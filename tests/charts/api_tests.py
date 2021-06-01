@@ -38,6 +38,7 @@ from tests.fixtures.world_bank_dashboard import load_world_bank_dashboard_with_s
 from tests.test_app import app
 from superset.charts.commands.data import ChartDataCommand
 from superset.connectors.sqla.models import SqlaTable, TableColumn
+from superset.errors import SupersetErrorType
 from superset.extensions import async_query_manager, cache_manager, db
 from superset.models.annotations import AnnotationLayer
 from superset.models.core import Database, FavStar, FavStarClassName
@@ -46,6 +47,7 @@ from superset.models.reports import ReportSchedule, ReportScheduleType
 from superset.models.slice import Slice
 from superset.utils import core as utils
 from superset.utils.core import AnnotationType, get_example_database, get_main_database
+
 
 from tests.base_api_tests import ApiOwnersTestCaseMixin
 from tests.base_tests import SupersetTestCase, post_assert_metric, test_client
@@ -1181,6 +1183,19 @@ class TestChartApi(SupersetTestCase, ApiOwnersTestCaseMixin, InsertChartMixin):
         rv = self.post_assert_metric(CHART_DATA_URI, request_payload, "data")
         self.assertEqual(rv.status_code, 200)
 
+    # Test chart csv without permission
+    @pytest.mark.usefixtures("load_birth_names_dashboard_with_slices")
+    def test_chart_data_csv_result_format_permission_denined(self):
+        """
+        Chart data API: Test chart data with CSV result format
+        """
+        self.login(username="gamma_no_csv")
+        request_payload = get_query_context("birth_names")
+        request_payload["result_format"] = "csv"
+
+        rv = self.post_assert_metric(CHART_DATA_URI, request_payload, "data")
+        self.assertEqual(rv.status_code, 403)
+
     @pytest.mark.usefixtures("load_birth_names_dashboard_with_slices")
     def test_chart_data_mixed_case_filter_op(self):
         """
@@ -1239,7 +1254,7 @@ class TestChartApi(SupersetTestCase, ApiOwnersTestCaseMixin, InsertChartMixin):
         """
         Chart data API: Ensure prophet post transformation works
         """
-        pytest.importorskip("fbprophet")
+        pytest.importorskip("prophet")
         self.login(username="admin")
         request_payload = get_query_context("birth_names")
         time_grain = "P1Y"
@@ -1345,6 +1360,11 @@ class TestChartApi(SupersetTestCase, ApiOwnersTestCaseMixin, InsertChartMixin):
         payload = get_query_context("birth_names")
         rv = self.post_assert_metric(CHART_DATA_URI, payload, "data")
         self.assertEqual(rv.status_code, 401)
+        response_payload = json.loads(rv.data.decode("utf-8"))
+        assert (
+            response_payload["errors"][0]["error_type"]
+            == SupersetErrorType.DATASOURCE_SECURITY_ACCESS_ERROR
+        )
 
     @pytest.mark.usefixtures("load_birth_names_dashboard_with_slices")
     def test_chart_data_jinja_filter_request(self):
@@ -1613,9 +1633,22 @@ class TestChartApi(SupersetTestCase, ApiOwnersTestCaseMixin, InsertChartMixin):
 
         assert rv.status_code == 422
         assert response == {
-            "message": {
-                "charts/imported_chart.yaml": "Chart already exists and `overwrite=true` was not passed"
-            }
+            "errors": [
+                {
+                    "message": "Error importing chart",
+                    "error_type": "GENERIC_COMMAND_ERROR",
+                    "level": "warning",
+                    "extra": {
+                        "charts/imported_chart.yaml": "Chart already exists and `overwrite=true` was not passed",
+                        "issue_codes": [
+                            {
+                                "code": 1010,
+                                "message": "Issue 1010 - Superset encountered an error while running a command.",
+                            }
+                        ],
+                    },
+                }
+            ]
         }
 
         # import with overwrite flag
@@ -1671,7 +1704,25 @@ class TestChartApi(SupersetTestCase, ApiOwnersTestCaseMixin, InsertChartMixin):
 
         assert rv.status_code == 422
         assert response == {
-            "message": {"metadata.yaml": {"type": ["Must be equal to Slice."]}}
+            "errors": [
+                {
+                    "message": "Error importing chart",
+                    "error_type": "GENERIC_COMMAND_ERROR",
+                    "level": "warning",
+                    "extra": {
+                        "metadata.yaml": {"type": ["Must be equal to Slice."]},
+                        "issue_codes": [
+                            {
+                                "code": 1010,
+                                "message": (
+                                    "Issue 1010 - Superset encountered an "
+                                    "error while running a command."
+                                ),
+                            }
+                        ],
+                    },
+                }
+            ]
         }
 
     @pytest.mark.usefixtures(

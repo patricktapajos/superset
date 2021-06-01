@@ -19,7 +19,7 @@
 import { PlusOutlined } from '@ant-design/icons';
 import { styled, t } from '@superset-ui/core';
 import React, { FC } from 'react';
-import { LineEditableTabs } from 'src/common/components/Tabs';
+import { LineEditableTabs } from 'src/components/Tabs';
 import Icon from 'src/components/Icon';
 import { FilterRemoval } from './types';
 import { REMOVAL_DELAY_SECS } from './utils';
@@ -42,11 +42,9 @@ export const StyledFilterTitle = styled.span`
 
 export const StyledAddFilterBox = styled.div`
   color: ${({ theme }) => theme.colors.primary.dark1};
-  text-align: left;
-  padding: ${({ theme }) => theme.gridUnit * 2}px 0;
-  margin: ${({ theme }) => theme.gridUnit * 3}px 0 0
-    ${({ theme }) => -theme.gridUnit * 2}px;
-  border-top: 1px solid ${({ theme }) => theme.colors.grayscale.light1};
+  padding: ${({ theme }) => theme.gridUnit * 2}px;
+  border-top: 1px solid ${({ theme }) => theme.colors.grayscale.light2};
+  cursor: pointer;
 
   &:hover {
     color: ${({ theme }) => theme.colors.primary.base};
@@ -84,31 +82,85 @@ export const FilterTabTitle = styled.span`
 `;
 
 const FilterTabsContainer = styled(LineEditableTabs)`
-  // extra selector specificity:
-  &.ant-tabs-card > .ant-tabs-nav .ant-tabs-tab {
-    min-width: ${FILTER_WIDTH}px;
-    margin: 0 ${({ theme }) => theme.gridUnit * 2}px 0 0;
-    padding: ${({ theme }) => theme.gridUnit}px
-      ${({ theme }) => theme.gridUnit * 2}px;
+  ${({ theme }) => `
+    height: 100%;
 
-    &:hover,
-    &-active {
-      color: ${({ theme }) => theme.colors.grayscale.dark1};
-      border-radius: ${({ theme }) => theme.borderRadius}px;
-      background-color: ${({ theme }) => theme.colors.secondary.light4};
+    & > .ant-tabs-content-holder {
+      border-left: 1px solid ${theme.colors.grayscale.light2};
+      padding-right: ${theme.gridUnit * 4}px;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
 
-      .ant-tabs-tab-remove > svg {
-        color: ${({ theme }) => theme.colors.grayscale.base};
-        transition: all 0.3s;
+    & > .ant-tabs-content-holder ~ .ant-tabs-content-holder {
+      border: none;
+    }
+
+    &.ant-tabs-card > .ant-tabs-nav .ant-tabs-ink-bar {
+      visibility: hidden;
+    }
+
+    &.ant-tabs-left
+      > .ant-tabs-content-holder
+      > .ant-tabs-content
+      > .ant-tabs-tabpane {
+      padding-left: ${theme.gridUnit * 4}px;
+      margin-top: ${theme.gridUnit * 4}px;
+    }
+
+    .ant-tabs-nav-list {
+      overflow-x: hidden;
+      overflow-y: auto;
+      padding-top: ${theme.gridUnit * 2}px;
+      padding-right: ${theme.gridUnit}px;
+      padding-bottom: ${theme.gridUnit * 3}px;
+      padding-left: ${theme.gridUnit * 3}px;
+    }
+
+    // extra selector specificity:
+    &.ant-tabs-card > .ant-tabs-nav .ant-tabs-tab {
+      min-width: ${FILTER_WIDTH}px;
+      margin: 0 ${theme.gridUnit * 2}px 0 0;
+      padding: ${theme.gridUnit}px
+        ${theme.gridUnit * 2}px;
+
+      &:hover,
+      &-active {
+        color: ${theme.colors.grayscale.dark1};
+        border-radius: ${theme.borderRadius}px;
+        background-color: ${theme.colors.secondary.light4};
+
+        .ant-tabs-tab-remove > svg {
+          color: ${theme.colors.grayscale.base};
+          transition: all 0.3s;
+        }
       }
     }
-  }
 
-  .ant-tabs-tab-btn {
-    text-align: left;
-    justify-content: space-between;
-    text-transform: unset;
-  }
+    .ant-tabs-tab-btn {
+      text-align: left;
+      justify-content: space-between;
+      text-transform: unset;
+    }
+
+    .ant-tabs-nav-more {
+      display: none;
+    }
+
+    .ant-tabs-extra-content {
+      width: 100%;
+    }
+  `}
+`;
+
+const StyledHeader = styled.div`
+  ${({ theme }) => `
+    color: ${theme.colors.grayscale.dark1};
+    font-size: ${theme.typography.sizes.l}px;
+    padding-top: ${theme.gridUnit * 4}px;
+    padding-right: ${theme.gridUnit * 4}px;
+    padding-left: ${theme.gridUnit * 4}px;
+  `}
 `;
 
 type FilterTabsProps = {
@@ -137,12 +189,18 @@ const FilterTabs: FC<FilterTabsProps> = ({
     onChange={onChange}
     activeKey={currentFilterId}
     onEdit={onEdit}
-    addIcon={
-      <StyledAddFilterBox>
-        <PlusOutlined />{' '}
-        <span data-test="add-filter-button">{t('Add filter')}</span>
-      </StyledAddFilterBox>
-    }
+    hideAdd
+    tabBarExtraContent={{
+      left: <StyledHeader>{t('Filters')}</StyledHeader>,
+      right: (
+        <StyledAddFilterBox onClick={() => onEdit('', 'add')}>
+          <PlusOutlined />{' '}
+          <span data-test="add-filter-button" aria-label="Add filter">
+            {t('Add filter')}
+          </span>
+        </StyledAddFilterBox>
+      ),
+    }}
   >
     {filterIds.map(id => (
       <LineEditableTabs.TabPane
