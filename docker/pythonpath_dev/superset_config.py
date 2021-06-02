@@ -121,6 +121,11 @@ EXCEL_EXTENSIONS = {"xlsx", "xls"}
 CSV_EXTENSIONS = {"csv", "tsv", "txt"}
 ALLOWED_EXTENSIONS = {*EXCEL_EXTENSIONS, *CSV_EXTENSIONS}
 
+FEATURE_FLAGS = {
+    "DASHBOARD_NATIVE_FILTERS": True,
+}
+
+
 #
 # Optionally import superset_config_docker.py (which will have been included on
 # the PYTHONPATH) in order to allow for local settings to be overridden
