@@ -36,10 +36,10 @@ services:
     image: *superset-image
     container_name: superset_app
     command: ["/app/docker/docker-bootstrap.sh", "app-gunicorn"]
-    user: "root"
+    user: *superset-user
     restart: unless-stopped
     ports:
-      - 80:8088
+      - 8088:8088
     depends_on: *superset-depends-on
     volumes: *superset-volumes
 
@@ -49,7 +49,7 @@ services:
     command: ["/app/docker/docker-init.sh"]
     env_file: docker/.env-non-dev
     depends_on: *superset-depends-on
-    user: "root"
+    user: *superset-user
     volumes: *superset-volumes
 
   superset-worker:
@@ -59,7 +59,7 @@ services:
     env_file: docker/.env-non-dev
     restart: unless-stopped
     depends_on: *superset-depends-on
-    user: "root"
+    user: *superset-user
     volumes: *superset-volumes
 
   superset-worker-beat:
@@ -69,7 +69,7 @@ services:
     env_file: docker/.env-non-dev
     restart: unless-stopped
     depends_on: *superset-depends-on
-    user: "root"
+    user: *superset-user
     volumes: *superset-volumes
 
 volumes:
