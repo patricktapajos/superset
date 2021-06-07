@@ -1989,23 +1989,22 @@ class StateMapViz(BaseViz):
     credits = "From Arbocontrol By Patrick Tapajos"
 
     def query_obj(self) -> QueryObjectDict:
+        self.form_data["columns"] = [self.form_data["state_column"], self.form_data["entity"]]
         qry = super().query_obj()
         qry["metrics"] = [self.form_data["metric"]]
-        qry["groupby"] = [self.form_data["entity"]]
+        qry["groupby"] = [self.form_data["state_column"], self.form_data["entity"]]
         return qry
 
     def get_data(self, df: pd.DataFrame) -> VizData:
         if df.empty:
             return None
-        fd = self.form_data        
-        cols = [fd.get("entity")]
+        fd = self.form_data   
+        cols = [fd.get("state_column"), fd.get("entity")]
         metric = self.metric_labels[0]
         cols += [metric]
         ndf = df[cols]        
-        ndf['state'] = ndf['iso_abc'].map(lambda s: str(s)[7:])
-        ndf['iso_abc'] = ndf['iso_abc'].map(lambda s: str(s)[0:6])
         df = ndf        
-        df.columns = ["city_id", "metric", "state"]
+        df.columns = ["state", "city_id", "metric"]
         d = df.to_dict(orient="records")
         return d
 

@@ -24,14 +24,15 @@ export default function transformProps(chartProps) {
     adhocFilters,
     extraFilters,
     metric,
+    stateColumn,
   } = formData;
+
   return {
     width,
     height,
     data: queriesData[0].data,
-    state_field: 'estado',
-    extraFilters: extraFilters,
-    adhocFilters: adhocFilters,
+    stateColumn: stateColumn,
+    extraFilters: queriesData[0]['form_data'].filters,
     metric: metric,
     linearColorScheme,
     numberFormat,

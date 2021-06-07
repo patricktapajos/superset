@@ -54,22 +54,15 @@ function StateMap(element, props) {
     linearColorScheme,
     numberFormat,
     extraFilters,
-    adhocFilters,
-    state_field,
+    stateColumn,
     metric,
   } = props;
 
   let filters = [];
-
   if (extraFilters && extraFilters.length > 0) {
-    let f = extraFilters.filter(o => o.col == state_field);
+    let f = extraFilters.filter(o => o.col == stateColumn);
     if (f.length > 0) {
       filters.push({ state: f[0].val });
-    }
-  } else if (adhocFilters && adhocFilters.length > 0) {
-    let f = adhocFilters.filter(o => o.subject == state_field);
-    if (f.length > 0) {
-      filters.push({ state: f[0].comparator });
     }
   }
 

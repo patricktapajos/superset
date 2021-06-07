@@ -21,13 +21,50 @@ import {
   D3_FORMAT_OPTIONS,
   D3_FORMAT_DOCS,
   sections,
+  ColumnOption,
 } from '@superset-ui/chart-controls';
+import { jsx as ___EmotionJSX } from '@emotion/react';
+
+const state_column = {
+  type: 'SelectControl',
+  label: t('State Code'),
+  description: t('State Column'),
+  multi: false,
+  freeForm: true,
+  allowAll: true,
+  commaChoosesOption: false,
+  default: [],
+  optionRenderer: c =>
+    ___EmotionJSX(ColumnOption, {
+      showType: true,
+      column: c,
+    }),
+  valueRenderer: c =>
+    ___EmotionJSX(ColumnOption, {
+      column: c,
+    }),
+  valueKey: 'column_name',
+  mapStateToProps: ({ datasource, controls }, controlState) => ({
+    options: (datasource == null ? void 0 : datasource.columns) || [],
+  }),
+};
+
 const config = {
   controlPanelSections: [
     {
       label: t('Query'),
       expanded: true,
-      controlSetRows: [['entity'], ['metric'], ['adhoc_filters']],
+      controlSetRows: [
+        [
+          {
+            name: 'state_column',
+            config: state_column,
+          },
+        ],
+        ['entity'],
+        ['metric'],
+        ['adhoc_filters'],
+      ],
     },
     {
       label: t('Chart Options'),
@@ -54,10 +91,8 @@ const config = {
   ],
   controlOverrides: {
     entity: {
-      label: t('ISO Arbo Codes'),
-      description: t(
-        'Column containing ISO 3166-2 codes of region/province/department in your table.',
-      ),
+      label: t('IBGE City Codes'),
+      description: t('Column containing IBGE codes of city in your table.'),
     },
     metric: {
       label: t('Metric'),
