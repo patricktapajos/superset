@@ -125,6 +125,7 @@ FEATURE_FLAGS = {
     "DASHBOARD_NATIVE_FILTERS": True,
 }
 
+SUPERSET_D3_LOCALE = "pt-BR"
 
 #
 # Optionally import superset_config_docker.py (which will have been included on

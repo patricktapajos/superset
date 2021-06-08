@@ -49,6 +49,30 @@ const state_column = {
   }),
 };
 
+const color_column = {
+  type: 'SelectControl',
+  label: t('Color Code'),
+  description: t('Color Column'),
+  multi: false,
+  freeForm: true,
+  allowAll: true,
+  commaChoosesOption: false,
+  default: [],
+  optionRenderer: c =>
+    ___EmotionJSX(ColumnOption, {
+      showType: true,
+      column: c,
+    }),
+  valueRenderer: c =>
+    ___EmotionJSX(ColumnOption, {
+      column: c,
+    }),
+  valueKey: 'column_name',
+  mapStateToProps: ({ datasource, controls }, controlState) => ({
+    options: (datasource == null ? void 0 : datasource.columns) || [],
+  }),
+};
+
 const config = {
   controlPanelSections: [
     {
@@ -66,6 +90,42 @@ const config = {
         ['adhoc_filters'],
       ],
     },
+    // {
+    //   label: t('Polygon Settings'),
+    //   expanded: true,
+    //   controlSetRows: [
+    //     [
+    //       {
+    //         name: 'break_points',
+    //         config: {
+    //           type: 'SelectControl',
+    //           multi: true,
+    //           freeForm: true,
+    //           label: t('Bucket break points'),
+    //           choices: formatSelectOptions([]),
+    //           description: t(
+    //             'List of n+1 values for bucketing metric into n buckets.',
+    //           ),
+    //           renderTrigger: true,
+    //         },
+    //       },
+    //     ],
+    //     [
+    //       {
+    //         name: 'color_break_points',
+    //         config: {
+    //           type: 'SelectControl',
+    //           multi: true,
+    //           freeForm: true,
+    //           label: t('Color of buckets'),
+    //           choices: formatSelectOptions([]),
+    //           description: t('How many buckets should the data be grouped in.'),
+    //           renderTrigger: true,
+    //         },
+    //       },
+    //     ],
+    //   ],
+    // },
     {
       label: t('Chart Options'),
       expanded: true,
@@ -83,6 +143,12 @@ const config = {
               choices: D3_FORMAT_OPTIONS,
               description: D3_FORMAT_DOCS,
             },
+          },
+        ],
+        [
+          {
+            name: 'color_column',
+            config: color_column,
           },
         ],
         ['linear_color_scheme'],

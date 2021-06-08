@@ -27,7 +27,7 @@ import {
 } from '@superset-ui/core';
 import states from './states';
 import './StateMap.css';
-// import { getBuckets, getBreakPointColorScaler } from './utils';
+import { max } from 'lodash';
 
 const propTypes = {
   data: PropTypes.arrayOf(
@@ -56,6 +56,7 @@ function StateMap(element, props) {
     extraFilters,
     stateColumn,
     metric,
+    colorColumn,
   } = props;
 
   let filters = [];
@@ -68,16 +69,44 @@ function StateMap(element, props) {
 
   const container = element;
   const format = getNumberFormatter(numberFormat);
-  const colorScale = getSequentialSchemeRegistry()
+  let colorScale = getSequentialSchemeRegistry()
     .get(linearColorScheme)
     .createLinearScale(d3Extent(data, v => v.metric));
   const colorMap = {};
-  data.forEach(d => {
-    colorMap[d.city_id] = colorScale(d.metric);
-    colorMap[d.state] = colorScale(d.metric);
-  });
 
-  // const metricLabel = fd.metric ? fd.metric.label || fd.metric : null;
+  if (colorColumn && colorColumn.length > 0) {
+    data.forEach(d => {
+      colorMap[d.city_id] = d.color;
+
+      let result = data.filter(region => region.state == d.state);
+      if (result) {
+        colorMap[d.state] = findMaxColor(result);
+      }
+    });
+  } else {
+    data.forEach(d => {
+      colorMap[d.city_id] = colorScale(d.metric);
+      colorMap[d.state] = colorScale(d.metric);
+    });
+  }
+
+  function findMaxColor(result) {
+    let objColors = result.reduce(function (prev, cur) {
+      var val = cur['color'];
+      prev[val] = (prev[val] || 0) + 1;
+      return prev;
+    }, {});
+    let maxColor = '#FFFF';
+    let maxValue = 0;
+    Object.keys(objColors).forEach(function (k) {
+      if (objColors[k] > maxValue) {
+        maxValue = objColors[k];
+        maxColor = k;
+      }
+    });
+    return maxColor;
+  }
+
   const colorFn = d => {
     if (d.properties.ISO != undefined) {
       return colorMap[d.properties.ISO.substr(-2, 2)];
@@ -85,27 +114,6 @@ function StateMap(element, props) {
       return colorMap[d.properties.id];
     }
   };
-
-  // const accessor = d => d[metricLabel]; // base color for the polygons
-
-  // const baseColorScaler =
-  //   fd.metric === null
-  //     ? () => [fc.r, fc.g, fc.b, 255 * fc.a]
-  //     : getBreakPointColorScaler(fd, data, accessor); // when polygons are selected, reduce the opacity of non-selected polygons
-
-  // const colorScaler = d => {
-  //   const baseColor = baseColorScaler(d);
-
-  //   if (selected.length > 0 && !selected.includes(d[fd.line_column])) {
-  //     baseColor[3] /= 2;
-  //   }
-
-  //   return baseColor;
-  // };
-
-  // const accessor = d => d[metricLabel];
-
-  // const buckets = getBuckets(formData, payload.data.features, accessor);
 
   const path = d3.geo.path();
   const div = d3.select(container);

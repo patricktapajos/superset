@@ -1988,11 +1988,19 @@ class StateMapViz(BaseViz):
     is_timeseries = False
     credits = "From Arbocontrol By Patrick Tapajos"
 
-    def query_obj(self) -> QueryObjectDict:
+    def query_obj(self) -> QueryObjectDict:        
         self.form_data["columns"] = [self.form_data["state_column"], self.form_data["entity"]]
+        
+        if self.form_data["color_column"]:
+            self.form_data["columns"].append(self.form_data["color_column"])
+
         qry = super().query_obj()
         qry["metrics"] = [self.form_data["metric"]]
         qry["groupby"] = [self.form_data["state_column"], self.form_data["entity"]]
+
+        if self.form_data["color_column"]:
+            qry["groupby"].append(self.form_data["color_column"])
+
         return qry
 
     def get_data(self, df: pd.DataFrame) -> VizData:
@@ -2002,9 +2010,16 @@ class StateMapViz(BaseViz):
         cols = [fd.get("state_column"), fd.get("entity")]
         metric = self.metric_labels[0]
         cols += [metric]
+        if fd.get("color_column"):
+            cols += [fd.get("color_column")] 
         ndf = df[cols]        
-        df = ndf        
-        df.columns = ["state", "city_id", "metric"]
+        df = ndf
+        
+        if fd.get("color_column"):
+            df.columns = ["state", "city_id", "metric", "color"]
+        else:
+            df.columns = ["state", "city_id", "metric"]
+
         d = df.to_dict(orient="records")
         return d
 
