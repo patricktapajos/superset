@@ -32,7 +32,7 @@ import { max } from 'lodash';
 const propTypes = {
   data: PropTypes.arrayOf(
     PropTypes.shape({
-      city_id: PropTypes.string,
+      city_id: PropTypes.string | PropTypes.number,
       state: PropTypes.string,
       metric: PropTypes.number,
     }),
@@ -74,6 +74,19 @@ function StateMap(element, props) {
     .createLinearScale(d3Extent(data, v => v.metric));
   const colorMap = {};
 
+  function getAggByState(arr) {
+    var result = [];
+    arr.reduce(function (res, value) {
+      if (!res[value.state]) {
+        res[value.state] = { state: value.state, metric: 0 };
+        result.push(res[value.state]);
+      }
+      res[value.state].metric += value.metric;
+      return res;
+    }, {});
+    return result;
+  }
+
   if (colorColumn && colorColumn.length > 0) {
     data.forEach(d => {
       colorMap[d.city_id] = d.color;
@@ -86,7 +99,12 @@ function StateMap(element, props) {
   } else {
     data.forEach(d => {
       colorMap[d.city_id] = colorScale(d.metric);
-      colorMap[d.state] = colorScale(d.metric);
+
+      let result = data.filter(region => region.state == d.state);
+      if (result) {
+        let r = getAggByState(result);
+        colorMap[d.state] = colorScale(r[0].metric);
+      }
     });
   }
 
@@ -224,15 +242,18 @@ function StateMap(element, props) {
 
     d3.select(this).style('fill', c);
     selectAndDisplayNameOfRegion(d);
-    let result = data.filter(region => region.city_id == d.properties.id);
+    let result = data.filter(
+      region => d.properties.id != null && region.city_id == d.properties.id,
+    );
     if (result.length == 0) {
       let result_ = data.filter(region => {
         if (d.properties.ISO != undefined) {
           return region.state == d.properties.ISO.substr(-2, 2);
         }
       });
-
-      let agg = verifyMetric(metric.aggregate, result_);
+      var result_s = getAggByState(result_);
+      let m = metric.aggregate || metric.toString().toUpperCase();
+      let agg = verifyMetric(m, result_s);
 
       result.push({ metric: agg ? agg : 0 });
     }
@@ -240,6 +261,10 @@ function StateMap(element, props) {
   };
 
   function verifyMetric(agg, arr) {
+    if (!arr || arr.length == 0) {
+      return 0;
+    }
+
     if (agg == 'AVG') {
       let qtde = 0;
       let sum = arr.reduce((totalValue, s_) => {
@@ -251,7 +276,7 @@ function StateMap(element, props) {
     }
 
     if (agg == 'COUNT') {
-      return arr.length;
+      return arr[0].metric || 0;
     }
     if (agg == 'COUNT_DISTINCT') {
       return arr.reduce(

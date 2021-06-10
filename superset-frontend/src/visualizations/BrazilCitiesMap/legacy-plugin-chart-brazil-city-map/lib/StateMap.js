@@ -64,6 +64,8 @@ function StateMap(element, props) {
     numberFormat,
     extraFilters,
     stateColumn,
+    metric,
+    colorColumn,
   } = props;
 
   let filters = [];
@@ -81,10 +83,56 @@ function StateMap(element, props) {
     .get(linearColorScheme)
     .createLinearScale((0, _d3Array.extent)(data, v => v.metric));
   const colorMap = {};
-  data.forEach(d => {
-    colorMap[d.city_id] = colorScale(d.metric);
-    colorMap[d.state] = colorScale(d.metric);
-  });
+  function getAggByState(arr) {
+    var result = [];
+    arr.reduce(function (res, value) {
+      if (!res[value.state]) {
+        res[value.state] = { state: value.state, metric: 0 };
+        result.push(res[value.state]);
+      }
+      res[value.state].metric += value.metric;
+      return res;
+    }, {});
+    return result;
+  }
+
+  if (colorColumn && colorColumn.length > 0) {
+    data.forEach(d => {
+      colorMap[d.city_id] = d.color;
+
+      let result = data.filter(region => region.state == d.state);
+      if (result) {
+        colorMap[d.state] = findMaxColor(result);
+      }
+    });
+  } else {
+    data.forEach(d => {
+      colorMap[d.city_id] = colorScale(d.metric);
+
+      let result = data.filter(region => region.state == d.state);
+      if (result) {
+        let r = getAggByState(result);
+        colorMap[d.state] = colorScale(r[0].metric);
+      }
+    });
+  }
+
+  function findMaxColor(result) {
+    let objColors = result.reduce(function (prev, cur) {
+      var val = cur['color'];
+      prev[val] = (prev[val] || 0) + 1;
+      return prev;
+    }, {});
+    let maxColor = '#FFFF';
+    let maxValue = 0;
+    Object.keys(objColors).forEach(function (k) {
+      if (objColors[k] > maxValue) {
+        maxValue = objColors[k];
+        maxColor = k;
+      }
+    });
+    return maxColor;
+  }
 
   const colorFn = d => {
     if (d.properties.ISO != undefined) {
@@ -200,26 +248,70 @@ function StateMap(element, props) {
     let c = colorFn(d);
 
     if (c !== 'none') {
-      c = _d.default.rgb(c).darker().toString();
+      c = d3.rgb(c).darker().toString();
     }
 
-    _d.default.select(this).style('fill', c);
-
+    d3.select(this).style('fill', c);
     selectAndDisplayNameOfRegion(d);
-    let result = data.filter(region => region.city_id == d.properties.id);
+    let result = data.filter(
+      region => d.properties.id != null && region.city_id == d.properties.id,
+    );
     if (result.length == 0) {
       let result_ = data.filter(region => {
         if (d.properties.ISO != undefined) {
           return region.state == d.properties.ISO.substr(-2, 2);
         }
       });
-      let sum = result_.reduce((totalValue, s_) => {
-        return totalValue + s_.metric;
-      }, 0);
-      result.push({ metric: sum ? sum : 0 });
+      var result_s = getAggByState(result_);
+      let m = metric.aggregate || metric.toString().toUpperCase();
+      let agg = verifyMetric(m, result_s);
+
+      result.push({ metric: agg ? agg : 0 });
     }
     updateMetrics(result);
   };
+
+  function verifyMetric(agg, arr) {
+    if (!arr || arr.length == 0) {
+      return 0;
+    }
+
+    if (agg == 'AVG') {
+      let qtde = 0;
+      let sum = arr.reduce((totalValue, s_) => {
+        qtde = qtde + 1;
+        return totalValue + s_.metric;
+      }, 0);
+      if (qtde > 0) qtde = (sum / qtde).toFixed(2);
+      return qtde;
+    }
+
+    if (agg == 'COUNT') {
+      return arr[0].metric || 0;
+    }
+    if (agg == 'COUNT_DISTINCT') {
+      return arr.reduce(
+        (acc, o) => ((acc[o.metric] = (acc[o.metric] || 0) + 1), acc),
+        {},
+      );
+    }
+    if (agg == 'MAX') {
+      arr.reduce(function (a, b) {
+        return Math.max(a.metric, b.metric);
+      });
+    }
+    if (agg == 'MIN') {
+      arr.reduce(function (a, b) {
+        return Math.min(a.metric, b.metric);
+      });
+    }
+
+    if (agg == 'SUM') {
+      let sum = arr.reduce((totalValue, s_) => {
+        return totalValue + s_.metric;
+      }, 0);
+    }
+  }
 
   const mouseout = function mouseout() {
     _d.default.select(this).style('fill', colorFn);
