@@ -251,9 +251,9 @@ function StateMap(element, props) {
           return region.state == d.properties.ISO.substr(-2, 2);
         }
       });
-      var result_s = getAggByState(result_);
+      // var result_s = getAggByState(result_);
       let m = metric.aggregate || metric.toString().toUpperCase();
-      let agg = verifyMetric(m, result_s);
+      let agg = verifyMetric(m, result_);
 
       result.push({ metric: agg ? agg : 0 });
     }
@@ -264,7 +264,6 @@ function StateMap(element, props) {
     if (!arr || arr.length == 0) {
       return 0;
     }
-
     if (agg == 'AVG') {
       let qtde = 0;
       let sum = arr.reduce((totalValue, s_) => {
@@ -272,11 +271,12 @@ function StateMap(element, props) {
         return totalValue + s_.metric;
       }, 0);
       if (qtde > 0) qtde = (sum / qtde).toFixed(2);
+
       return qtde;
     }
 
     if (agg == 'COUNT') {
-      return arr[0].metric || 0;
+      return getAggByState(arr)[0].metric || 0;
     }
     if (agg == 'COUNT_DISTINCT') {
       return arr.reduce(

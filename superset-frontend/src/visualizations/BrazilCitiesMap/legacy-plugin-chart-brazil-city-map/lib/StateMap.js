@@ -262,9 +262,8 @@ function StateMap(element, props) {
           return region.state == d.properties.ISO.substr(-2, 2);
         }
       });
-      var result_s = getAggByState(result_);
       let m = metric.aggregate || metric.toString().toUpperCase();
-      let agg = verifyMetric(m, result_s);
+      let agg = verifyMetric(m, result_);
 
       result.push({ metric: agg ? agg : 0 });
     }
@@ -287,7 +286,7 @@ function StateMap(element, props) {
     }
 
     if (agg == 'COUNT') {
-      return arr[0].metric || 0;
+      return getAggByState(arr)[0].metric || 0;
     }
     if (agg == 'COUNT_DISTINCT') {
       return arr.reduce(
