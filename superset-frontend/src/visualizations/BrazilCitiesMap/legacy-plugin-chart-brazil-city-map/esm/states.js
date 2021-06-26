@@ -5,7 +5,7 @@ import AL from 'file-loader!./states/alagoas.geojson';
 import AP from 'file-loader!./states/amapa.geojson';
 import AM from 'file-loader!./states/amazonas.geojson';
 import BA from 'file-loader!./states/bahia.geojson';
-import CA from 'file-loader!./states/ceara.geojson';
+import CE from 'file-loader!./states/ceara.geojson';
 import DF from 'file-loader!./states/distritofederal.geojson';
 import ES from 'file-loader!./states/espiritosanto.geojson';
 import GO from 'file-loader!./states/goias.geojson';
@@ -35,7 +35,7 @@ const states = {
   AP,
   AM,
   BA,
-  CA,
+  CE,
   DF,
   ES,
   GO,

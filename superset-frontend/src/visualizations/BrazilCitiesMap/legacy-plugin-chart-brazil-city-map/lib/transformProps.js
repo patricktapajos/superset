@@ -26,17 +26,18 @@ function transformProps(chartProps) {
   const {
     linearColorScheme,
     numberFormat,
-    adhocFilters,
-    extraFilters,
     metric,
     stateColumn,
+    colorColumn,
   } = formData;
   return {
     width,
     height,
     data: queriesData[0].data,
     stateColumn: stateColumn,
+    colorColumn: colorColumn,
     extraFilters: queriesData[0]['form_data'].filters,
+    metric: metric,
     linearColorScheme,
     numberFormat,
   };

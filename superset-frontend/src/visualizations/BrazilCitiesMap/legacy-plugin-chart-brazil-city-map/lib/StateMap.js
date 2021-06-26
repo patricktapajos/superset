@@ -56,6 +56,17 @@ const propTypes = {
 const maps = {};
 
 function StateMap(element, props) {
+  let path;
+  let div;
+  let svg;
+  let backgroundRect;
+  let g;
+  let mapLayer;
+  let textLayer;
+  let bigText;
+  let resultText;
+  let filters = [];
+
   const {
     data,
     width,
@@ -77,7 +88,7 @@ function StateMap(element, props) {
     }
   }
 
-  const container = element;
+  let container = element;
   const format = (0, _core.getNumberFormatter)(numberFormat);
   const colorScale = (0, _core.getSequentialSchemeRegistry)()
     .get(linearColorScheme)
@@ -99,7 +110,6 @@ function StateMap(element, props) {
   if (colorColumn && colorColumn.length > 0) {
     data.forEach(d => {
       colorMap[d.city_id] = d.color;
-
       let result = data.filter(region => region.state == d.state);
       if (result) {
         colorMap[d.state] = findMaxColor(result);
@@ -108,7 +118,6 @@ function StateMap(element, props) {
   } else {
     data.forEach(d => {
       colorMap[d.city_id] = colorScale(d.metric);
-
       let result = data.filter(region => region.state == d.state);
       if (result) {
         let r = getAggByState(result);
@@ -123,7 +132,7 @@ function StateMap(element, props) {
       prev[val] = (prev[val] || 0) + 1;
       return prev;
     }, {});
-    let maxColor = '#FFFF';
+    let maxColor = '#C3C3C3';
     let maxValue = 0;
     Object.keys(objColors).forEach(function (k) {
       if (objColors[k] > maxValue) {
@@ -142,83 +151,49 @@ function StateMap(element, props) {
     }
   };
 
-  const path = _d.default.geo.path();
-
-  const div = _d.default.select(container);
-
-  div.classed('superset-legacy-chart-state-map', true);
-  div.selectAll('*').remove();
-  container.style.height = `${height}px`;
-  container.style.width = `${width}px`;
-  const svg = div
-    .append('svg:svg')
-    .attr('width', width)
-    .attr('height', height)
-    .attr('preserveAspectRatio', 'xMidYMid meet');
-  const backgroundRect = svg
-    .append('rect')
-    .attr('class', 'background')
-    .attr('width', width)
-    .attr('height', height);
-  const g = svg.append('g');
-  const mapLayer = g.append('g').classed('map-layer', true);
-  const textLayer = g
-    .append('g')
-    .classed('text-layer', true)
-    .attr('transform', `translate(${width / 2}, 45)`);
-  const bigText = textLayer.append('text').classed('big-text', true);
-  const resultText = textLayer
-    .append('text')
-    .classed('result-text', true)
-    .attr('dy', '1em');
-  let centered;
-
   const clicked = function clicked(d) {
-    const hasCenter = d && centered !== d;
-    let x;
-    let y;
-    let k;
-    const halfWidth = width / 2;
-    const halfHeight = height / 2;
+    loadMapLayer();
 
-    if (hasCenter) {
-      const centroid = path.centroid(d);
-      [x, y] = centroid;
-      k = 4;
-      centered = d;
-    } else {
-      x = halfWidth;
-      y = halfHeight;
-      k = 1;
-      centered = null;
+    let state_name = 'brasil';
+
+    if (d && d.properties.ISO) {
+      state_name = d.properties.ISO.substr(-2, 2);
     }
-
-    g.transition()
-      .duration(750)
-      .attr(
-        'transform',
-        `translate(${halfWidth},${halfHeight})scale(${k})translate(${-x},${-y})`,
-      );
-    textLayer
-      .style('opacity', 0)
-      .attr(
-        'transform',
-        `translate(0,0)translate(${x},${hasCenter ? y - 5 : 45})`,
-      )
-      .transition()
-      .duration(750)
-      .style('opacity', 1);
-    bigText
-      .transition()
-      .duration(750)
-      .style('font-size', hasCenter ? 6 : 16);
-    resultText
-      .transition()
-      .duration(750)
-      .style('font-size', hasCenter ? 16 : 24);
+    //let map = maps[state_name];
+    defineState(state_name);
   };
 
-  backgroundRect.on('click', clicked);
+  function loadMapLayer() {
+    path = d3.geo.path();
+    div = d3.select(container);
+    div.classed('superset-legacy-chart-state-map', true);
+    div.selectAll('*').remove();
+    container.style.height = `${height}px`;
+    container.style.width = `${width}px`;
+    svg = div
+      .append('svg:svg')
+      .attr('width', width)
+      .attr('height', height)
+      .attr('preserveAspectRatio', 'xMidYMid meet');
+    backgroundRect = svg
+      .append('rect')
+      .attr('class', 'background')
+      .attr('width', width)
+      .attr('height', height);
+    g = svg.append('g');
+    mapLayer = g.append('g').classed('map-layer', true);
+    textLayer = g
+      .append('g')
+      .classed('text-layer', true)
+      .attr('transform', `translate(${width / 1.4}, 25)`);
+    bigText = textLayer.append('text').classed('big-text', true);
+    resultText = textLayer
+      .append('text')
+      .classed('result-text', true)
+      .attr('dy', '1em');
+
+    backgroundRect.on('click', clicked);
+  }
 
   const selectAndDisplayNameOfRegion = function selectAndDisplayNameOfRegion(
     feature,

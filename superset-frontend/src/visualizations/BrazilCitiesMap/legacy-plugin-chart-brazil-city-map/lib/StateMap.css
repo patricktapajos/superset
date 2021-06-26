@@ -26,7 +26,8 @@
 }
 
 .superset-legacy-chart-state-map .background {
-  fill: rgba(255, 255, 255, 0);
+  /* fill: rgba(255, 255, 255, 0); */
+  fill: rgb(96 125 139 / 15%);
   pointer-events: all;
 }
 

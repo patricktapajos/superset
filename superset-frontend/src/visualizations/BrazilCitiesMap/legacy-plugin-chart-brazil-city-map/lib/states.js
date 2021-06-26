@@ -120,9 +120,16 @@ function _interopRequireDefault(obj) {
 
 /* eslint-disable import/no-webpack-loader-syntax, import/no-unresolved */
 const states = {
-  amazonas: _amazonas.default,
-  minasgerais: _minasgerais.default,
-  parana: _parana.default,
+  AM: _amazonas.default,
+  MG: _minasgerais.default,
+  PR: _parana.default,
+  TO: _tocantins.default,
+  SE: _sergipe.default,
+  SP: _saopaulo.default,
+  SC: _santacatarina.default,
+  RJ: _riojaneiro.default,
+  PE: _pernambuco.default,
+  PI: _piaui.default,
 };
 var _default = states;
 exports.default = _default;
