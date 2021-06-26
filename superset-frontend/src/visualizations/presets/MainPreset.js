@@ -20,7 +20,7 @@ import { isFeatureEnabled, Preset } from '@superset-ui/core';
 import {
   BigNumberChartPlugin,
   BigNumberTotalChartPlugin,
-} from '@superset-ui/legacy-preset-chart-big-number';
+} from '../legacy-preset-chart-big-number';
 import CalendarChartPlugin from '@superset-ui/legacy-plugin-chart-calendar';
 import ChordChartPlugin from '@superset-ui/legacy-plugin-chart-chord';
 import CountryMapChartPlugin from '@superset-ui/legacy-plugin-chart-country-map';
@@ -41,6 +41,7 @@ import TreemapChartPlugin from '@superset-ui/legacy-plugin-chart-treemap';
 import { WordCloudChartPlugin } from '@superset-ui/plugin-chart-word-cloud';
 import WorldMapChartPlugin from '@superset-ui/legacy-plugin-chart-world-map';
 import StateMapChartPlugin from '../BrazilCitiesMap/legacy-plugin-chart-brazil-city-map';
+import TableColorChartPlugin from '../ColorTable/plugin-chart-table-color';
 
 import {
   AreaChartPlugin,
@@ -132,6 +133,7 @@ export default class MainPreset extends Preset {
         new SankeyChartPlugin().configure({ key: 'sankey' }),
         new SunburstChartPlugin().configure({ key: 'sunburst' }),
         new TableChartPlugin().configure({ key: 'table' }),
+        new TableColorChartPlugin().configure({ key: 'table_color' }),
         new TimePivotChartPlugin().configure({ key: 'time_pivot' }),
         new TimeTableChartPlugin().configure({ key: 'time_table' }),
         new TreemapChartPlugin().configure({ key: 'treemap' }),
