@@ -76,6 +76,30 @@ export default function setupFormatters() {
       }),
     )
     .registerValue(
+      'BRAZILIAN_PERCENTAGE_2',
+      createD3NumberFormatter({
+        locale: {
+          decimal: ',',
+          thousands: '.',
+          grouping: [3, 3, 3, 3, 3, 3, 3],
+          currency: ['', ''],
+        },
+        formatString: ',.2%',
+      }),
+    )
+    .registerValue(
+      'BRAZILIAN_PERCENTAGE_1',
+      createD3NumberFormatter({
+        locale: {
+          decimal: ',',
+          thousands: '.',
+          grouping: [3, 3, 3, 3, 3, 3, 3],
+          currency: ['', ''],
+        },
+        formatString: ',.1%',
+      }),
+    )
+    .registerValue(
       'BRAZILIAN_CURRENCY',
       createD3NumberFormatter({
         locale: {
