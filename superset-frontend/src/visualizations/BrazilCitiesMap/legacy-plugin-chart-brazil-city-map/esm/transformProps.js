@@ -24,6 +24,8 @@ export default function transformProps(chartProps) {
     metric,
     stateColumn,
     colorColumn,
+    breakPoints,
+    colorBreakPoints,
   } = formData;
 
   return {
@@ -32,6 +34,8 @@ export default function transformProps(chartProps) {
     data: queriesData[0].data,
     stateColumn: stateColumn,
     colorColumn: colorColumn,
+    breakPoints: breakPoints,
+    colorBreakPoints: colorBreakPoints,
     extraFilters: queriesData[0]['form_data'].filters,
     metric: metric,
     linearColorScheme,

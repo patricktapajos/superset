@@ -68,6 +68,8 @@ function StateMap(element, props) {
     stateColumn,
     metric,
     colorColumn,
+    breakPoints,
+    colorBreakPoints,
   } = props;
 
   if (extraFilters && extraFilters.length > 0) {
@@ -105,6 +107,16 @@ function StateMap(element, props) {
         colorMap[d.state] = findMaxColor(result);
       }
     });
+  } else if (breakPoints && breakPoints.length > 0) {
+    let data_ = bucketizeColor(data, breakPoints);
+    // console.log(data_);
+    data_.forEach(d => {
+      colorMap[d.city_id] = d.color;
+      let result = data_.filter(region => region.state == d.state);
+      if (result) {
+        colorMap[d.state] = findMaxColor(result);
+      }
+    });
   } else {
     data.forEach(d => {
       colorMap[d.city_id] = colorScale(d.metric);
@@ -114,6 +126,32 @@ function StateMap(element, props) {
         colorMap[d.state] = colorScale(r[0].metric);
       }
     });
+  }
+
+  function bucketizeColor(dataList, buckets) {
+    // buckets must contain values sorted from smallest to largest
+    let lowBucketIndex = 0;
+    let data = [];
+    let supArray = [];
+    for (let j = 0; j <= buckets.length; j++) {
+      let value = parseFloat(buckets[j]);
+      let lastValue = parseFloat(buckets[lowBucketIndex]);
+      if (j == 0) {
+        supArray = dataList.filter(i => i.metric <= value);
+        supArray.map(i => (i['color'] = colorBreakPoints[j]));
+      } else if (j == buckets.length) {
+        supArray = dataList.filter(i => i.metric > lastValue);
+        supArray.map(i => (i['color'] = colorBreakPoints[j]));
+      } else {
+        supArray = dataList.filter(
+          i => i.metric > lastValue && i.metric <= value,
+        );
+        supArray.map(i => (i['color'] = colorBreakPoints[j]));
+      }
+      data = data.concat(supArray);
+      lowBucketIndex = j;
+    }
+    return data;
   }
 
   function findMaxColor(result) {

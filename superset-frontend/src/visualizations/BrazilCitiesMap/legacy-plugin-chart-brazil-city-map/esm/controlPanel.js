@@ -23,6 +23,7 @@ import {
   sections,
   ColumnOption,
 } from '@superset-ui/chart-controls';
+import { formatSelectOptions } from './utilities/utils';
 import { jsx as ___EmotionJSX } from '@emotion/react';
 
 const state_column = {
@@ -90,42 +91,42 @@ const config = {
         ['adhoc_filters'],
       ],
     },
-    // {
-    //   label: t('Polygon Settings'),
-    //   expanded: true,
-    //   controlSetRows: [
-    //     [
-    //       {
-    //         name: 'break_points',
-    //         config: {
-    //           type: 'SelectControl',
-    //           multi: true,
-    //           freeForm: true,
-    //           label: t('Bucket break points'),
-    //           choices: formatSelectOptions([]),
-    //           description: t(
-    //             'List of n+1 values for bucketing metric into n buckets.',
-    //           ),
-    //           renderTrigger: true,
-    //         },
-    //       },
-    //     ],
-    //     [
-    //       {
-    //         name: 'color_break_points',
-    //         config: {
-    //           type: 'SelectControl',
-    //           multi: true,
-    //           freeForm: true,
-    //           label: t('Color of buckets'),
-    //           choices: formatSelectOptions([]),
-    //           description: t('How many buckets should the data be grouped in.'),
-    //           renderTrigger: true,
-    //         },
-    //       },
-    //     ],
-    //   ],
-    // },
+    {
+      label: t('Polygon Settings'),
+      expanded: true,
+      controlSetRows: [
+        [
+          {
+            name: 'break_points',
+            config: {
+              type: 'SelectControl',
+              multi: true,
+              freeForm: true,
+              label: t('Bucket break points'),
+              choices: formatSelectOptions([]),
+              description: t(
+                'List of n+1 values for bucketing metric into n buckets.',
+              ),
+              renderTrigger: true,
+            },
+          },
+        ],
+        [
+          {
+            name: 'color_break_points',
+            config: {
+              type: 'SelectControl',
+              multi: true,
+              freeForm: true,
+              label: t('Color of buckets'),
+              choices: formatSelectOptions([]),
+              description: t('How many buckets should the data be grouped in.'),
+              renderTrigger: true,
+            },
+          },
+        ],
+      ],
+    },
     {
       label: t('Chart Options'),
       expanded: true,
