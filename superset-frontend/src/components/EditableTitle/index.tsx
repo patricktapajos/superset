@@ -201,9 +201,11 @@ export default function EditableTitle({
   if (!canEdit) {
     // don't actually want an input in this case
     titleComponent = (
-      <span data-test="editable-title-input" title={value}>
-        {value}
-      </span>
+      <span
+        data-test="editable-title-input"
+        title={value}
+        dangerouslySetInnerHTML={{ __html: value }}
+      ></span>
     );
   }
   return (
