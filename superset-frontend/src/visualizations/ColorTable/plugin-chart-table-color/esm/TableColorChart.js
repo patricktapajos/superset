@@ -35,11 +35,9 @@ function _extends() {
  */
 import React, { useCallback, useMemo, useState } from 'react';
 import { extent as d3Extent, max as d3Max } from 'd3-array';
-import {
-  FaSort,
-  FaSortDown as FaSortDesc,
-  FaSortUp as FaSortAsc,
-} from 'react-icons/fa';
+import { FaSort } from '@react-icons/all-files/fa/FaSort';
+import { FaSortDown as FaSortDesc } from '@react-icons/all-files/fa/FaSortDown';
+import { FaSortUp as FaSortAsc } from '@react-icons/all-files/fa/FaSortUp';
 import { GenericDataType, t, tn } from '@superset-ui/core';
 import DataTable from './DataTable';
 import Styles from './Styles';
