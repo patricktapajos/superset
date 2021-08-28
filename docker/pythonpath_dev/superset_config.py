@@ -26,6 +26,7 @@ from datetime import timedelta
 from typing import Optional
 
 from cachelib.file import FileSystemCache
+from cachelib.redis import RedisCache
 from celery.schedules import crontab
 
 logger = logging.getLogger()
@@ -67,7 +68,7 @@ REDIS_PORT = get_env_variable("REDIS_PORT")
 REDIS_CELERY_DB = get_env_variable("REDIS_CELERY_DB", "0")
 REDIS_RESULTS_DB = get_env_variable("REDIS_RESULTS_DB", "1")
 
-RESULTS_BACKEND = FileSystemCache("/app/superset_home/sqllab")
+RESULTS_BACKEND = RedisCache(host=REDIS_HOST, port=REDIS_PORT, key_prefix='superset_results')
 
 
 class CeleryConfig(object):
@@ -90,6 +91,10 @@ class CeleryConfig(object):
 
 
 CELERY_CONFIG = CeleryConfig
+ROW_LIMIT = 500000
+VIZ_ROW_LIMIT = 500000
+SUPERSET_WORKERS = 4
+RESULTS_BACKEND_USE_MSGPACK=False
 
 FEATURE_FLAGS = {"ALERT_REPORTS": True}
 ALERT_REPORTS_NOTIFICATION_DRY_RUN = True
