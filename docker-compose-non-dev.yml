@@ -31,6 +31,14 @@ services:
     volumes:
       - redis:/data
 
+  db:
+    env_file: docker/.env-non-dev
+    image: postgres:10
+    container_name: superset_db
+    restart: unless-stopped
+    volumes:
+      - db_home:/var/lib/postgresql/data
+
   superset:
     env_file: docker/.env-non-dev
     image: *superset-image

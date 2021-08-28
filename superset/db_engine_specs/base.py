@@ -44,7 +44,7 @@ from flask import current_app, g
 from flask_babel import gettext as __, lazy_gettext as _
 from marshmallow import fields, Schema
 from marshmallow.validate import Range
-from sqlalchemy import column, DateTime, select, types
+from sqlalchemy import column, select, types
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.engine.interfaces import Compiled, Dialect
 from sqlalchemy.engine.reflection import Inspector
@@ -75,7 +75,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger()
 
 
-class TimeGrain(NamedTuple):  # pylint: disable=too-few-public-methods
+class TimeGrain(NamedTuple):
     name: str  # TODO: redundant field, remove
     label: str
     function: str
@@ -108,9 +108,7 @@ builtin_time_grains: Dict[Optional[str], str] = {
 }
 
 
-class TimestampExpression(
-    ColumnClause
-):  # pylint: disable=abstract-method,too-many-ancestors,too-few-public-methods
+class TimestampExpression(ColumnClause):  # pylint: disable=abstract-method
     def __init__(self, expr: str, col: ColumnClause, **kwargs: Any) -> None:
         """Sqlalchemy class that can be can be used to render native column elements
         respeting engine-specific quoting rules as part of a string-based expression.
@@ -381,7 +379,7 @@ class BaseEngineSpec:  # pylint: disable=too-many-public-methods
         elif pdf == "epoch_ms":
             time_expr = time_expr.replace("{col}", cls.epoch_ms_to_dttm())
 
-        return TimestampExpression(time_expr, col, type_=DateTime)
+        return TimestampExpression(time_expr, col, type_=col.type)
 
     @classmethod
     def get_time_grains(cls) -> Tuple[TimeGrain, ...]:
@@ -1306,6 +1304,18 @@ class BaseEngineSpec:  # pylint: disable=too-many-public-methods
         return None
 
     @classmethod
+    def has_implicit_cancel(cls) -> bool:
+        """
+        Return True if the live cursor handles the implicit cancelation of the query,
+        False otherise.
+
+        :return: Whether the live cursor implicitly cancels the query
+        :see: handle_cursor
+        """
+
+        return False
+
+    @classmethod
     def get_cancel_query_id(cls, cursor: Any, query: Query) -> Optional[str]:
         """
         Select identifiers from the database engine that uniquely identifies the
@@ -1316,6 +1326,7 @@ class BaseEngineSpec:  # pylint: disable=too-many-public-methods
         :param query: Query instance
         :return: Query identifier
         """
+
         return None
 
     @classmethod
@@ -1329,6 +1340,8 @@ class BaseEngineSpec:  # pylint: disable=too-many-public-methods
         other life-cycle methods of the query
         :return: True if query cancelled successfully, False otherwise
         """
+
+        return False
 
 
 # schema for adding a database by providing parameters instead of the
@@ -1395,7 +1408,8 @@ class BasicParametersMixin:
         parameters: BasicParametersType,
         encryted_extra: Optional[Dict[str, str]] = None,
     ) -> str:
-        query = parameters.get("query", {})
+        # make a copy so that we don't update the original
+        query = parameters.get("query", {}).copy()
         if parameters.get("encryption"):
             if not cls.encryption_parameters:
                 raise Exception("Unable to build a URL with encryption enabled")
@@ -1418,6 +1432,11 @@ class BasicParametersMixin:
         cls, uri: str, encrypted_extra: Optional[Dict[str, Any]] = None
     ) -> BasicParametersType:
         url = make_url(uri)
+        query = {
+            key: value
+            for (key, value) in url.query.items()
+            if (key, value) not in cls.encryption_parameters.items()
+        }
         encryption = all(
             item in url.query.items() for item in cls.encryption_parameters.items()
         )
@@ -1427,7 +1446,7 @@ class BasicParametersMixin:
             "host": url.host,
             "port": url.port,
             "database": url.database,
-            "query": url.query,
+            "query": query,
             "encryption": encryption,
         }
 

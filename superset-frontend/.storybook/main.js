@@ -18,7 +18,7 @@
  */
 const path = require('path');
 
-// Suerset's webpack.config.js
+// Superset's webpack.config.js
 const customConfig = require('../webpack.config.js');
 
 module.exports = {
