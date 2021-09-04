@@ -15,6 +15,7 @@
 # limitations under the License.
 #
 x-superset-image: &superset-image apache/superset:latest-dev
+x-superset-user: &superset-user root
 x-superset-depends-on: &superset-depends-on
   - redis
 x-superset-volumes:
@@ -30,14 +31,6 @@ services:
     restart: unless-stopped
     volumes:
       - redis:/data
-
-  db:
-    env_file: docker/.env-non-dev
-    image: postgres:10
-    container_name: superset_db
-    restart: unless-stopped
-    volumes:
-      - db_home:/var/lib/postgresql/data
 
   superset:
     env_file: docker/.env-non-dev
