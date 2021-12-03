@@ -17,7 +17,7 @@
       "Dashboards": ["Painéis"],
       "Plugins": ["Plugins"],
       "CSS Templates": ["Modelos CSS"],
-      "Row level security": ["Segurança em nível de linha"],
+      "Row Level Security": ["Segurança em nível de linha"],
       "Security": ["Segurança"],
       "Import Dashboards": ["Importar painéis"],
       "SQL Editor": ["Editor de SQL"],
@@ -154,6 +154,10 @@
         "Série temporal - Mudança de porcentagem"
       ],
       "Time Series - Stacked": ["Série temporal - empilhadas"],
+      "Stacked": ["Empilhadas"],
+      "Stacked Style": ["Empilhadas"] ,
+      "Grouped": ["Agrupados"],
+      "Grouped Style": ["Agrupados"],
       "Histogram": ["Histograma"],
       "Must have at least one numeric column specified": [
         "Deve ter pelo menos uma coluna numérica"
@@ -181,6 +185,7 @@
       "State Map": ["Mapa de Estados"],
       "World Map": ["Mapa mundial"],
       "Filters": ["Filtros"],
+      "Filters out of scope (%d)": ["Filtros fora de escopo (%d)"],
       "Invalid filter configuration, please select a column": [
         "Configuração de filtro inválida, por favor selecione uma coluna"
       ],
@@ -1573,6 +1578,7 @@
       "minute(s) UTC": ["minuto(s) UTC"],
       "Invalid cron expression": ["Expressão cron inválida"],
       "Clear": ["Limpar"],
+      "Clear all": ["Limpar Tudo"],
       "Sunday": ["Domingo"],
       "Monday": ["Segunda"],
       "Tuesday": ["Terça"],
@@ -2188,6 +2194,7 @@
       "Filter configuration": ["Configuração do filtro"],
       "Error while fetching data": ["Erro ao buscar dados"],
       "No results found": ["Nenhum resultado encontrado"],
+      "No Results": ["Nenhum resultado encontrado"],
       "%s option(s)": ["%s opção(ões)"],
       "Invalid lat/long configuration.": ["Configuração lat/long inválida."],
       "Reverse lat/long ": ["Inverter lat/long "],
@@ -2479,7 +2486,6 @@
         "Editar propriedades da camada de anotação"
       ],
       "Annotation layer name": ["nome da camada de anotação"],
-      "Annotation layers": ["camadas de anotação"],
       "There was an issue deleting the selected layers: %s": [
         "Ocorreu um problema ao deletar as camadas de anotação selecionadas: %s"
       ],
@@ -2583,6 +2589,7 @@
         "Ocorreu um erro ao se obter os dados relacionados ao banco de dados: %s"
       ],
       "Asynchronous query execution": ["Execução da query assíncrona"],
+      "No results were returned for this query. If you expected results to be returned, ensure any filters are configured properly and the datasource contains data for the selected time range.": ["Sem resultados para esta consulta. Verifique os filtros utilizados."],
       "AQE": ["EQA"],
       "Allow data manipulation language": [
         "Permite a linguagem de manipulação de dados"

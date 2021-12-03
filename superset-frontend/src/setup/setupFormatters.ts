@@ -75,7 +75,7 @@ export default function setupFormatters() {
         formatString: ',.3~f',
       }),
     ).registerValue(
-      'BRAZILIAN_FORMAT',
+      'BRAZILIAN_FORMAT_1',
       createD3NumberFormatter({
         locale: {
           decimal: ',',
@@ -83,7 +83,7 @@ export default function setupFormatters() {
           grouping: [3, 3, 3, 3, 3, 3, 3],
           currency: ['', ''],
         },
-        formatString: ',.3~f',
+        formatString: ',.1~f',
       }),
     )
     .registerValue(
